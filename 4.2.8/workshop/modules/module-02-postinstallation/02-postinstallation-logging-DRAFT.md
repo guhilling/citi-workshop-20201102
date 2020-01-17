@@ -81,8 +81,6 @@ mkdir /mnt/ocp_images
 mkdir /mnt/ocp_isos
 ```
 
-
-
 ```
 virsh pool-define-as ocp_images dir - - - - "/mnt/ocp_images"
 ```
@@ -523,7 +521,7 @@ $TTL     1D
                   IN  NS  dns.ocp4.lab.example.com.
 dns.ocp4            IN  A   192.168.100.254
 services            IN CNAME dns.ocp4
-workstation			IN  A   192.168.100.253
+workstation            IN  A   192.168.100.253
 bootstrap.ocp4            IN  A   192.168.100.10
 master01.ocp4            IN  A   192.168.100.21
 master02.ocp4            IN  A   192.168.100.22
@@ -629,7 +627,7 @@ ddns-update-style interim;
 ```
 
 > Important notice: Please adjust this file as per your environment
->
+> 
 > Please ensure that the MAC addresses matches exactly the MAC adresses of the virtual machines we created earlier
 
 ## Setup TFTP:
@@ -961,11 +959,11 @@ sshKey: 'SSH PUBLIC KEY'
 Please adjust this file to your needs.
 
 > The pull secret can be obtained after accessing: https://cloud.redhat.com
->
+> 
 > Please login with your RHNID and your password.
->
+> 
 > The pull secret can be found when access the following link:
->
+> 
 > https://cloud.redhat.com/openshift/install/metal/user-provisioned
 
 To obtain this key please execute:
@@ -1083,7 +1081,6 @@ virt-install -n worker01.lab.example.com --description "Worker01 Machine for Ope
 ```
 virt-install -n worker02.lab.example.com --description "Worker02 Machine for Openshift 4 Cluster" --os-type=Linux --os-variant=rhel7 --ram=8192 --vcpus=4 --noreboot --disk pool=ocp_images,bus=virtio,size=50 --graphics vnc --pxe --network network=ocp4-network,mac=52:54:00:c4:8f:50
 ```
-
 
 A good practice is to start bootstrap vm first. Then step by step all other machines. They will start and boot up and they will select the proper CoreOS Image and the ignition file automatically and install and reboot.
 
