@@ -314,7 +314,6 @@ jq
 httpd-tools
 nfs-utils
 container-selinux
-
 ```
 
 ### Workstation Virtual Machine:
