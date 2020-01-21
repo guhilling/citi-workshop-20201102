@@ -4,7 +4,7 @@ In this section we describe the installation of OpenShift Cluster Aggregated Log
 
 Reference: [Product Documentation - Deploying cluster logging](https://docs.openshift.com/container-platform/4.2/logging/cluster-logging-deploying.html)
 
-This section focusses on installation of the Cluster Logging components. For the initial installation, we add ephemeral storage only. Adding persistent storage is described in Chapter 3.
+This section focusses on installation of the Cluster Logging components. For the initial installation, we add ephemeral storage only. Adding persistent storage is described in an extra module.
 
 The deployment of the logging components requires to install two additional Operators.
 
@@ -59,7 +59,7 @@ spec: {}
 Use the following command to get the channel value required for the next step.
 
 ```
-$ oc get packagemanifest elasticsearch-operator -n openshift-marketplace -o jsonpath='{.status.channels[].name}'
+[root@services ~]# oc get packagemanifest elasticsearch-operator -n openshift-marketplace -o jsonpath='{.status.channels[].name}'
 ```
 
 Create a Subscription object YAML file (for example, operator-sub-es.yaml) to subscribe a Namespace to an Operator and create using `oc create -f operator-sub-es.yaml`. Put the channel value to the file.
@@ -81,7 +81,7 @@ spec:
 Change to the openshift-operators-redhat project:
 
 ```
-oc project openshift-operators-redhat
+[root@services ~]# oc project openshift-operators-redhat
 ```
 
 Create a Role-based Access Control (RBAC) object file (for example, rbac-es.yaml) to grant Prometheus permission to access the openshift-operators-redhat namespace. And create using `oc create -f rbac-es.yaml`.
@@ -124,13 +124,13 @@ namespace: openshift-operators-redhat
 Change to the openshift-logging project:
 
 ```
-oc project openshift-logging
+[root@services ~]# oc project openshift-logging
 ```
 
 Use the following command to get the channel value required for the next step.
 
 ```
-$ oc get packagemanifest cluster-logging -n openshift-marketplace -o jsonpath='{.status.channels[].name}'
+[root@services ~]# oc get packagemanifest cluster-logging -n openshift-marketplace -o jsonpath='{.status.channels[].name}'
 ```
 
 Create a Subscription object YAML file (for example, operator-sub-logging.yaml) to subscribe a Namespace to an Operator and create using `oc create -f operator-sub-logging.yaml`. Put the channel value to the file.
@@ -156,32 +156,44 @@ Once the steps for the Operator installation are executed, the operators incl. t
 Check the existence of the operators:
 
 ```
-oc get clusterserviceversion
-NAME                                         DISPLAY                  VERSION               REPLACES   PHASE
-clusterlogging.4.2.13-201912230557           Cluster Logging          4.2.13-201912230557              Succeeded
-elasticsearch-operator.4.2.13-201912230557   Elasticsearch Operator   4.2.13-201912230557              Succeeded
+[root@services ~]# oc get clusterserviceversion
+```
+
+```
+NAME DISPLAY VERSION REPLACES PHASE
+clusterlogging.4.2.13-201912230557 Cluster Logging 4.2.13-201912230557 Succeeded
+elasticsearch-operator.4.2.13-201912230557 Elasticsearch Operator 4.2.13-201912230557 Succeeded
 ```
 
 Check existence of pods for both operators:
 
 ```
-oc get pods -n openshift-operators-redhat
-NAME                                      READY   STATUS    RESTARTS   AGE
-elasticsearch-operator-74bb66456c-mgtt6   1/1     Running   0          30m
+[root@services ~]# oc get pods -n openshift-operators-redhat
 ```
 
 ```
-oc get pods -n openshift-logging
-NAME                                        READY   STATUS    RESTARTS   AGE
-cluster-logging-operator-5cb9bf8c7f-pfg6t   1/1     Running   0          9m41s
+NAME READY STATUS RESTARTS AGE
+elasticsearch-operator-74bb66456c-mgtt6 1/1 Running 0 30m
+```
+
+```
+[root@services ~]# oc get pods -n openshift-logging
+```
+
+```
+NAME READY STATUS RESTARTS AGE
+cluster-logging-operator-5cb9bf8c7f-pfg6t 1/1 Running 0 9m41s
 ```
 
 Check existance of the Custom Ressource Definition (CRD) objects for logging:
 
 ```
-oc get crd | grep loggin
-clusterloggings.logging.openshift.io                        2020-01-10T09:16:59Z
-elasticsearches.logging.openshift.io                        2020-01-10T09:02:30Z
+[root@services ~]# oc get crd | grep loggin
+```
+
+```
+clusterloggings.logging.openshift.io 2020-01-10T09:16:59Z
+elasticsearches.logging.openshift.io 2020-01-10T09:02:30Z
 ```
 
 ### Deloy Cluster Logging Components (using the operators)
@@ -232,7 +244,10 @@ spec:
 Wait a few moments and look for the Operator to rollout route, services, deployments, and pods:
 
 ```
-oc get all
+[root@services ~]# oc get all
+```
+
+```
 NAME                                                READY   STATUS    RESTARTS   AGE
 pod/cluster-logging-operator-5cb9bf8c7f-pfg6t       1/1     Running   1          2d4h
 pod/curator-1578799800-5lpjt                        1/1     Running   0          10h
@@ -275,16 +290,21 @@ route.route.openshift.io/kibana   kibana-openshift-logging.apps.ocp4.lab.example
 ```
 
 ```
-oc get pods
-NAME                                            READY   STATUS    RESTARTS   AGE
-cluster-logging-operator-5cb9bf8c7f-pfg6t       1/1     Running   1          2d4h
-curator-1578799800-5lpjt                        1/1     Running   0          47h
-elasticsearch-cdm-07r3062k-1-bb476b875-gmfwn    1/2     Running   0          47h
-elasticsearch-cdm-07r3062k-2-5dcb98d664-9dpwh   1/2     Running   0          47h
-fluentd-2cvjm                                   1/1     Running   2          47h
-fluentd-hl48p                                   1/1     Running   2          47h
-fluentd-qhkrb                                   1/1     Running   2          47h
-fluentd-r42mq                                   1/1     Running   2          47h
-fluentd-z6vhs                                   1/1     Running   2          47h
-kibana-655fb977b7-ktq9s                         2/2     Running   0          47h
+[root@services ~]# oc get pods
 ```
+
+```
+NAME READY STATUS RESTARTS AGE
+cluster-logging-operator-5cb9bf8c7f-pfg6t 1/1 Running 1 2d4h
+curator-1578799800-5lpjt 1/1 Running 0 47h
+elasticsearch-cdm-07r3062k-1-bb476b875-gmfwn 1/2 Running 0 47h
+elasticsearch-cdm-07r3062k-2-5dcb98d664-9dpwh 1/2 Running 0 47h
+fluentd-2cvjm 1/1 Running 2 47h
+fluentd-hl48p 1/1 Running 2 47h
+fluentd-qhkrb 1/1 Running 2 47h
+fluentd-r42mq 1/1 Running 2 47h
+fluentd-z6vhs 1/1 Running 2 47h
+kibana-655fb977b7-ktq9s 2/2 Running 0 47h
+```
+
+After these steps we should have a full working EFK Logging Stack on our Openshift Cluster
