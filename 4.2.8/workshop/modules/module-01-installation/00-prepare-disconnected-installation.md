@@ -453,6 +453,106 @@ Now we need to configure SElinux to use custom ports in SELinux:
 [root@services ~]# semanage port -a 32700 -t http_port_t -p tcp
 ```
 
+## Install Local Registry
+
+For our disconnected Installation we need to install an own local Registry on our services Machine. For that we first need to install the openshift client tools:
+
+```
+[root@services ~]# wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.2.8/openshift-client-linux-4.2.8.tar.gz
+```
+
+After downloading the client tools we need to extract them:
+
+```
+[root@services ~]# tar -xvf openshift-client-linux-4.2.8.tar.gz
+```
+
+Then we need to copy the files to the proper location on our services machine:
+
+```
+[root@services ~]# cp -v oc kubectl /usr/local/bin/
+```
+
+If not already done we need to install several packages:
+
+```
+[root@services ~]# yum -y install podman httpd-tools
+```
+
+Now we need to create the needed folders for our registry
+
+```
+[root@services ~]# mkdir -p /opt/registry/{auth,certs,data}
+```
+
+Now we need to Provide a certificate for the registry. If we do not have an existing, trusted certificate authority, we can generate a self-signed certificate:
+
+```
+[root@services ~]# cd /opt/registry/certs
+```
+
+```
+[root@services ~]# openssl req -newkey rsa:4096 -nodes -sha256 -keyout domain.key -x509 -days 365 -out domain.crt
+```
+
+The procedure will ask several questions that need to be answered:
+
+| Country Name (2 letter code)                          | Specify the two-letter ISO country code for your location. See the [ISO 3166 country codes](https://www.iso.org/iso-3166-country-codes.html) standard.       |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| State or Province Name (full name)                    | Enter the full name of your state or province.                                                                                                               |
+| Locality Name (eg, city)                              | Enter the name of your city.                                                                                                                                 |
+| Organization Name (eg, company)                       | Enter your company name.                                                                                                                                     |
+| Organizational Unit Name (eg, section)                | Enter your department name.                                                                                                                                  |
+| Common Name (eg, your name or your server’s hostname) | Enter the host name for the registry host. Ensure that your hostname is in DNS and that it resolves to the expected IP address.                              |
+| Email Address                                         | Enter your email address. For more information, see the [req](https://www.openssl.org/docs/man1.1.1/man1/req.html) description in the OpenSSL documentation. |
+
+After creating the registry we need to create a username and password for our registry
+
+```
+[root@services ~]# htpasswd -bBc /opt/registry/auth/htpasswd <user_name> <password>
+```
+
+Username and Password should be: student and redhat
+
+The next step is to run our local registry with the following command:
+
+```
+[root@services ~]# podman run --name mirror-registry -p 5000:5000 \ 
+     -v /opt/registry/data:/var/lib/registry:z \
+     -v /opt/registry/auth:/auth:z \
+     -e "REGISTRY_AUTH=htpasswd" \
+     -e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm" \
+     -e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd \
+     -v /opt/registry/certs:/certs:z \
+     -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.crt \
+     -e REGISTRY_HTTP_TLS_KEY=/certs/domain.key \
+     -d docker.io/library/registry:2
+```
+
+After done this we need to open several ports on our registry node:
+
+```
+[root@services ~]# firewall-cmd --add-port=5000/tcp --zone=internal --permanent 
+```
+
+```
+[root@services ~]# # firewall-cmd --add-port=5000/tcp --zone=public   --permanent
+```
+
+```
+[root@services ~]# firewall-cmd --reload
+```
+
+Now we need to add the self created certificate to the the local trust:
+
+```
+[root@services ~]# cp /opt/registry/certs/domain.crt /etc/pki/ca-trust/source/anchors/
+```
+
+```
+[root@services ~]# update-ca-trust
+```
+
 Now we have created all of our services. the next step is to prepare the installation from the Openshift perspective
 
 ## Configure OpenShift installer and CLI binary:
@@ -478,15 +578,7 @@ First of all we need to download and install the Openshift client and the instal
 ```
 
 ```
-[root@services ~]# wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.2.8/openshift-client-linux-4.2.8.tar.gz
-```
-
-```
 [root@services ~]# tar -xvf openshift-install-linux-4.2.8.tar.gz
-```
-
-```
-[root@services ~]# tar -xvf openshift-client-linux-4.2.8.tar.gz
 ```
 
 ```
@@ -498,8 +590,6 @@ Now we need to create a SSH key pair to access to use later to access the CoreOS
 ```
 [root@services ~]# ssh-keygen -t rsa -N "" -f /root/.ssh/id_rsa
 ```
-
-Next we need to create the ignition files that will be used during the installation:
 
 ```
 [root@services ~]# cd /root
@@ -513,55 +603,160 @@ Next we need to create the ignition files that will be used during the installat
 [root@services ~]# cd ocp4
 ```
 
-Now we need to create the install-config-base.yaml file:
+For the disconnected Installation we need the Pull Secret downloaded from https://cloud.redhat.com.
+
+The file is named: pull-secret.text
+
+The Pull Secret for the local Registry needs to be created like this:
+
+```
+[root@services ~]# echo -n 'student:redhat' | base64 -w0 
+```
+
+The output is something like this:
+
+```
+BGVtbYk3ZHAtqXs=
+```
+
+Now we need to make a copy in json format of the original pull secret file downloaded from cloud.redhat.com:
+
+```
+[root@services ~]# cat ./pull-secret.text | jq .  > /root/ocp4/pull-secret-local.text
+```
+
+The file looks similar to the example below:
+
+```
+{
+  "auths": {
+    "cloud.openshift.com": {
+      "auth": "b3BlbnNo...",
+      "email": "you@example.com"
+    },
+    "quay.io": {
+      "auth": "b3BlbnNo...",
+      "email": "you@example.com"
+    },
+    "registry.connect.redhat.com": {
+      "auth": "NTE3Njg5Nj...",
+      "email": "you@example.com"
+    },
+    "registry.redhat.io": {
+      "auth": "NTE3Njg5Nj...",
+      "email": "you@example.com"
+    }
+  }
+}
+```
+
+Now we need to edit the new file like this:
+
+```
+[root@services ~]# vim /root/ocp4/pull-secret-local.text
+```
+
+We just need to add a section to this file that describes the local registry:
+
+```
+"auths": {
+...
+ "<services.lab.example.com:5000": {
+ "auth": "BGVtbYk3ZHAtqXs=",
+ "email": "root@lab.example.com"
+ },
+...
+```
+
+After we have done this we need to mirror the needed images to our registry.
+
+We need to set some variables so that we can mirror the correct content:
+
+```
+[root@services ~]# export OCP_RELEASE=4.2.8
+```
+
+```
+[root@services ~]# export LOCAL_REGISTRY='services.lab.example.com:5000'
+```
+
+```
+[root@services ~]# export LOCAL_REPOSITORY='ocp4/openshift4' 
+```
+
+```
+[root@services ~]# export PRODUCT_REPO='openshift-release-dev'
+```
+
+```
+[root@services ~]# export LOCAL_SECRET_JSON='/root/ocp4/pull-secret-local.text'
+```
+
+```
+[root@services ~]# export RELEASE_NAME="ocp-release"
+```
+
+After we have done this we can now mirror the images ... +/- 99 images.
+
+```
+[root@services ~]# oc adm -a ${LOCAL_SECRET_JSON} release mirror \
+     --from=quay.io/${PRODUCT_REPO}/${RELEASE_NAME}:${OCP_RELEASE} \
+     --to=${LOCAL_REGISTRY}/${LOCAL_REPOSITORY} \
+     --to-release image=${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}:${OCP_RELEASE}
+```
+
+After the mirroring has been done we can create an installation program that is based on the content that we have just mirrored:
+
+```
+[root@services ~]# oc adm -a ${LOCAL_SECRET_JSON} release extract --command=openshift-install "${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}:${OCP_RELEASE}"
+```
+
+the last step is to optain the ssh public we earlier created:
+
+```
+[root@services ~]# cat /root/.ssh/id_rsa.pub
+```
+
+Next we need to create the ignition files that will be used during the installation:
 
 ```
 [root@services ~]# vim /root/ocp4/install-config-base.yaml
 ```
+
+Now we need to create the install-config-base.yaml file:
+
+> Please adjust this file to your needs with the values provided earlier.
 
 ```
 apiVersion: v1
 baseDomain: lab.example.com
 compute:
 - hyperthreading: Enabled
-  name: worker
-  replicas: 0
+ name: worker
+ replicas: 0
 controlPlane:
-  hyperthreading: Enabled
-  name: master
-  replicas: 3
+ hyperthreading: Enabled
+ name: master
+ replicas: 3
 metadata:
-  name: ocp4
+ name: ocp4
 networking:
-  clusterNetworks:
-  - cidr: 10.128.0.0/14
-    hostPrefix: 23
-  networkType: OpenShiftSDN
-  serviceNetwork:
-  - 172.30.0.0/16
+ clusterNetworks:
+ - cidr: 10.128.0.0/14
+ hostPrefix: 23
+ networkType: OpenShiftSDN
+ serviceNetwork:
+ - 172.30.0.0/16
 platform:
-  none: {}
-pullSecret: 'GET FROM cloud.redhat.com'
+ none: {}
+pullSecret: 'SELF CREATED'
 sshKey: 'SSH PUBLIC KEY'
+imageContentSources:
+ - mirrors:
+ - services.lab.example.com:5000/<repo_name>/release
+ source: quay.io/openshift-release-dev/ocp-release
+- mirrors:
 ```
-
-Please adjust this file to your needs.
-
-> The pull secret can be obtained after accessing: https://cloud.redhat.com
-> 
-> Please login with your RHNID and your password.
-> 
-> The pull secret can be found when access the following link:
-> 
-> https://cloud.redhat.com/openshift/install/metal/user-provisioned
-
-To obtain this key please execute:
-
-```
-[root@services ~]# cat /root/.ssh/id_rsa.pub
-```
-
-Copy the content of the output into sshKey: Please don't forget the quotes at the beginning and the end.
 
 Now we will create the ignition files:
 
@@ -634,4 +829,4 @@ re-check again:
 [root@services ~]# systemctl status haproxy
 ```
 
-Now we are able to install our virtual machines for installing openshift cluster
+Now we are able to install our virtual machines for installing openshift cluster. The Procedure of the installation is similar to the connected installation.
