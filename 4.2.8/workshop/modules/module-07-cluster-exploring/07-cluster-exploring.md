@@ -1,6 +1,6 @@
 ## Exploring the Cluster
 
-In this chapter, we will review the OpenShift Web Console.
+In this module, we will review the OpenShift Web Console.
 
 Let's take some time to explore our OCP4 cluster. We now have two options, we can use our local terminal on our laptop, or we can use the browser-based terminal that we provisioned in the previous section. Due to connectivity challenges, we maybe forced to use the browser-based one, and for convenience our recommendation would be to use it. If we really want to configure our local client we can do so by using the following instructions to download the command line tooling. We should only do this if we don't want to use the browser-based terminal; we need to make sure we run this on our local laptop and NOT within the web-browser.
 
@@ -36,10 +36,13 @@ oc version
 
 Let's now configure our command line tooling to point to our new cluster.
 Below you'll need to enter the API URI, which will be shown as the "Openshift API for command line 'oc' client".
-OCP4 CLI login require the API URL ({{API_URL}}) not the master URL.
+OCP4 CLI login require the [https://api.ocp4.lab.example.com:6443](https://api.ocp4.lab.example.com:6443) not the master URL.
 
 ```
-oc login --server https://api.ocp4.lab.example.com:6443
+$ oc login --server https://api.ocp4.lab.example.com:6443
+```
+
+```
 ...
 The server uses a certificate signed by an unknown authority.
 You can bypass the certificate check, but any data you send to the server could be intercepted by others.
@@ -49,12 +52,16 @@ Authentication required for https://api.ocp4.lab.example.com:6443 (openshift)
 Username: <your username>
 Password: <your password>
 Login successful.
+...
 ```
 
 We can now check that your config has been written successfully:
 
 ```
-cat ~/.kube/config
+$ cat ~/.kube/config
+```
+
+```
 apiVersion: v1
 clusters:
 cluster:
@@ -69,28 +76,31 @@ Now that your client CLI is installed, you will have access to the web console a
 The default installation behavior creates 6 nodes: 3 masters and 3 "worker" application/compute nodes. You can view them with:
 
 ```
-oc get nodes -o wide
+$ oc get nodes -o wide
+```
+
+```
 NAME       STATUS   ROLES           AGE   VERSION             INTERNAL-IP      EXTERNAL-IP   OS-IMAGE                                                   KERNEL-VERSION                CONTAINER-RUNTIME
 master01   Ready    master,worker   15h   v1.14.6+6ac6aa4b0   192.168.100.21   <none>        Red Hat Enterprise Linux CoreOS 42.81.20191119.1 (Ootpa)   4.18.0-147.0.3.el8_1.x86_64   cri-o://1.14.11-0.24.dev.rhaos4.2.gitc41de67.el8
 master02   Ready    master,worker   15h   v1.14.6+6ac6aa4b0   192.168.100.22   <none>        Red Hat Enterprise Linux CoreOS 42.81.20191119.1 (Ootpa)   4.18.0-147.0.3.el8_1.x86_64   cri-o://1.14.11-0.24.dev.rhaos4.2.gitc41de67.el8
 master03   Ready    master,worker   15h   v1.14.6+6ac6aa4b0   192.168.100.23   <none>        Red Hat Enterprise Linux CoreOS 42.81.20191119.1 (Ootpa)   4.18.0-147.0.3.el8_1.x86_64   cri-o://1.14.11-0.24.dev.rhaos4.2.gitc41de67.el8
 worker01   Ready    worker          15h   v1.14.6+6ac6aa4b0   192.168.100.31   <none>        Red Hat Enterprise Linux CoreOS 42.81.20191119.1 (Ootpa)   4.18.0-147.0.3.el8_1.x86_64   cri-o://1.14.11-0.24.dev.rhaos4.2.gitc41de67.el8
 worker02   Ready    worker          15h   v1.14.6+6ac6aa4b0   192.168.100.32   <none>        Red Hat Enterprise Linux CoreOS 42.81.20191119.1 (Ootpa)   4.18.0-147.0.3.el8_1.x86_64   cri-o://1.14.11-0.24.dev.rhaos4.2.gitc41de67.el8
-
 ```
 
 If you want to see the various applied labels, you can also do:
 
 ```
-oc get nodes --show-labels
+$ oc get nodes --show-labels
+```
 
+```
 NAME       STATUS   ROLES           AGE   VERSION             LABELS
 master01   Ready    master,worker   15h   v1.14.6+6ac6aa4b0   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/os=linux,kubernetes.io/arch=amd64,kubernetes.io/hostname=master01,kubernetes.io/os=linux,node-role.kubernetes.io/master=,node-role.kubernetes.io/worker=,node.openshift.io/os_id=rhcos
 master02   Ready    master,worker   15h   v1.14.6+6ac6aa4b0   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/os=linux,kubernetes.io/arch=amd64,kubernetes.io/hostname=master02,kubernetes.io/os=linux,node-role.kubernetes.io/master=,node-role.kubernetes.io/worker=,node.openshift.io/os_id=rhcos
 master03   Ready    master,worker   15h   v1.14.6+6ac6aa4b0   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/os=linux,kubernetes.io/arch=amd64,kubernetes.io/hostname=master03,kubernetes.io/os=linux,node-role.kubernetes.io/master=,node-role.kubernetes.io/worker=,node.openshift.io/os_id=rhcos
 worker01   Ready    worker          15h   v1.14.6+6ac6aa4b0   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/os=linux,kubernetes.io/arch=amd64,kubernetes.io/hostname=worker01,kubernetes.io/os=linux,node-role.kubernetes.io/worker=,node.openshift.io/os_id=rhcos
 worker02   Ready    worker          15h   v1.14.6+6ac6aa4b0   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/os=linux,kubernetes.io/arch=amd64,kubernetes.io/hostname=worker02,kubernetes.io/os=linux,node-role.kubernetes.io/worker=,node.openshift.io/os_id=rhcos
-
 ```
 
 For reference, labels are used as a mechanism to tag certain information onto a node, or a set of nodes, that can help you identify your systems, e.g. by operating system, system architecture, specification, location of the system (e.g. region), it's hostname, etc. They can also help with application scheduling, e.g. make sure that my application (or pod) resides on a specific system type. The labels shown above are utilising the default labels, but it's possible to set some custom labels in the form of a key-value pair.
@@ -100,7 +110,11 @@ For reference, labels are used as a mechanism to tag certain information onto a 
 The cluster version operator is the core of what defines an OpenShift deployment . The cluster version operator pod(s) contains the set of manifests which are used to deploy, updated, and/or manage the OpenShift services in the cluster. This operator ensures that the other services, also deployed as operators, are at the version which matches the release definition and takes action to remedy discrepancies when necessary.
 
 ```
-oc get deployments -n openshift-cluster-version
+$ oc get deployments -n openshift-cluster-version
+```
+
+```
+
 NAME                       DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
 cluster-version-operator   1         1         1            1           2h
 ....
@@ -154,7 +168,7 @@ Or a more comprehensive way of getting a list of operators running on the cluste
 
 ```
  oc adm release info --commits
- 
+
  Name:          4.2.8
 Digest:        sha256:4bf307b98beba4d42da3316464013eac120c6e5a398646863ef92b0e2c621230
 Created:       2019-11-21T09:36:15Z

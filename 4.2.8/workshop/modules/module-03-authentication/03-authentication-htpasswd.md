@@ -1,4 +1,4 @@
-# Chapter 2 - Authentication Providers
+# Module 03: Authentication Providers
 
 One important step after installing an Openshift 4 Cluster is to setup Authentication Providers. In this Workshop we will use htpasswd as an authentication provider.
 
@@ -77,8 +77,8 @@ Next, let's login to the web-console and ensure that it's working as expected.
 - Click `Advanced` and Click `proceed...` link on the browser, you should be
   presented with the page to select the authentication providers.
 - The WebConsole will now show two login links:
-    - 'kube:admin'
-    - 'lab_example_com_htpasswd_provider' (this is the name of the htpasswd identity provider as defined above in the 'htpasswd_cr.yaml' file)
+  - 'kube:admin'
+  - 'lab_example_com_htpasswd_provider' (this is the name of the htpasswd identity provider as defined above in the 'htpasswd_cr.yaml' file)
 - Click on the htpasswd provider link
 - Proceed to login with one of the username and password that you created and you should hit the OpenShift console home page.
 
@@ -105,8 +105,7 @@ You don't have any projects. You can try to create a new project, by running
     oc new-project <projectname>
 ```
 
-
-### Logging in using CLI on a shell replacing system:admin login context 
+### Logging in using CLI on a shell replacing system:admin login context
 
 > This is optional and documented for informational purposes only
 > 
@@ -178,7 +177,6 @@ Switched to context "/api-ocp4-lab-example-com:6443/the-example-user".
 
 # oc whoami
 the-example-user
-
 ```
 
 ## Example: ldap Authentication Provider
@@ -186,5 +184,3 @@ the-example-user
 <TODO>
 
 > Details can be found in the [product documentation](https://docs.openshift.com/container-platform/4.2/authentication/identity_providers/configuring-ldap-identity-provider.html).
-
-

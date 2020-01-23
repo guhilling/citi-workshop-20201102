@@ -1,5 +1,3 @@
-
-
 After we have done the installation we can check the cluster is up and running type in the following command:
 
 ```

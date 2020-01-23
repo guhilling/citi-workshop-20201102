@@ -27,19 +27,19 @@ to the environment variable called `PATH` from the OS.
 It is possible as well and easier to install the client tools from openshift.com.
 
 1. OSX and Linux:
-
-    * OSX
-https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.2.8/openshift-client-mac-4.2.8.tar.gz
-
-    * Linux
-https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.2.8/openshift-client-linux-4.2.8.tar.gz
+   
+   * OSX
+     https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.2.8/openshift-client-mac-4.2.8.tar.gz
+   
+   * Linux
+     https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.2.8/openshift-client-linux-4.2.8.tar.gz
 
 Copy the binary to the `/usr/local/bin` directory, or one of the
 paths listed in the `PATH` environment variable.
 
 2. Windows:
-
-    * https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.2.8/openshift-client-windows-4.2.8.zip
+   
+   * https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.2.8/openshift-client-windows-4.2.8.zip
 
 Use `oc.exe` to open an OpenShift shell. If you getting error from
 running oc, go to http://git-scm.com to download git bash for Windows (during

@@ -20,8 +20,6 @@ The Node will stop after installation and we need to start the node with the com
 virsh start --domain worker03.lab.example.com
 ```
 
-
-
 Now we need to do the same steps as in the cluster installation:
 
 ```
@@ -64,6 +62,7 @@ we need to approve all pending certificates
 ```
 oc adm certificate approve CERTIFICATE
 ```
+
 We need a secound round:
 
 ```
@@ -73,6 +72,7 @@ csr-72t87   4s      system:node:worker03                                        
 csr-f6tsc   20m     system:serviceaccount:openshift-machine-config-operator:node-bootstrapper   Approved,Issued
 csr-lrc8f   5m19s   system:serviceaccount:openshift-machine-config-operator:node-bootstrapper   Approved,Issued
 ```
+
 And a last approvel:
 
 ```
