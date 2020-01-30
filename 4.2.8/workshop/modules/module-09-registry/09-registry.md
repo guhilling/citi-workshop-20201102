@@ -7,8 +7,6 @@ CR object in order to add the nodeSelector.
 
 - First, take a look at it:
 
-----
-
 ```
 oc get configs.imageregistry.operator.openshift.io/cluster -o yaml
 ```
@@ -80,7 +78,10 @@ the following quickly enough, you may see the old registry pods terminating and
 the new ones starting.:
 
 ```
-oc get pod -n openshift-image-registry
+$ oc get pod -n openshift-image-registry
+```
+
+```
 NAME                                               READY   STATUS        RESTARTS   AGE
 cluster-image-registry-operator-5644775d7c-w78kh   1/1     Running       0          34h
 image-registry-5878c9d896-nmkc6                    1/1     Terminating   0          22h
@@ -103,7 +104,10 @@ Also note that the default replica count is 1. In a real-world environment you m
 If you look at the node on which the registry landed (noting that you'll likely have to refresh your list of pods by using the previous commands to get its new name):
 
 ```
-oc get pod image-registry-5878c9d896-nmkc6 -n openshift-image-registry -o wide
+$ oc get pod image-registry-5878c9d896-nmkc6 -n openshift-image-registry -o wide
+```
+
+```
 NAME                              READY   STATUS    RESTARTS   AGE   IP           NODE                                         NOMINATED NODE   READINESS GATES
 image-registry-5878c9d896-nmkc6   1/1     Running   0          22h   10.131.4.5   ip-10-0-139-255.us-east-2.compute.internal   <none>           <none>
 ```
@@ -113,7 +117,11 @@ image-registry-5878c9d896-nmkc6   1/1     Running   0          22h   10.131.4.5 
 it is now running on an infra worker:
 
 ```
-oc get node ip-10-0-139-255.us-east-2.compute.internal
+$ oc get node ip-10-0-139-255.us-east-2.compute.internal
+```
+
+```
+
 NAME                                         STATUS   ROLES          AGE   VERSION
 ip-10-0-139-255.us-east-2.compute.internal   Ready    infra,worker   22h   v1.13.4+c3617b99f
 ```

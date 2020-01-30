@@ -1,8 +1,8 @@
 # Module 00:
 
-# Preparation of the Hypervisor:
+## Preparation of the Hypervisor:
 
-### Preface:
+## Preface:
 
 In this module of this Openshift 4 Workstop we will guide you step by step on how to prepare the Hypervisor on which we will later install Openshift 4.2 with KVM libvirt based environments like (Redhat 8) or on an Fedora 31 or Redhat 8 Workstation.
 
@@ -20,7 +20,7 @@ In this module of this Openshift 4 Workstop we will guide you step by step on ho
 
 > In this Workshop we will show up the xml files for KVM/libvirt. If you want to use an graphical tool for setup your virtual Environment you can use virt-manager or cockpit or at least the virsh console.
 
-## Environment:
+### Environment:
 
 The following virtual instances needs to be created to install the Openshift Cluster:
 
@@ -57,7 +57,7 @@ Please execute the following command on your Hypervisor Machine:
 [root@hypervisor ~]# systemctl enable libvirtd --now
 ```
 
-## Clone GIT Repository:
+### Clone GIT Repository:
 
 For later in this workshop we need to clone the git repository that contains the complete workshop material and usefull helper scripts and playbooks that makes live easier.
 
@@ -69,7 +69,7 @@ From the root directory on your hypervisor execute:
 
 On the Hypervisor in your root directory /root you will find now a openshift-4-gls-workshop directory. if you access this directory you will find a directory called: 4.2.8 this is the actual workshop version, it is based upon the release taken for this workshop.
 
-## Create Storage pool:
+### Create Storage pool:
 
 First of all we need to create two storage pools. A storage pool is the location where we save our qcow2 images and iso images. We need approx 400GB free space for setting up our Openshift cluster. If the space in /var/lib/libvirt/ is not enough we can create additional storage pools on other hard discs. 
 
@@ -178,11 +178,11 @@ After we have done this we can copy our iso image for rhel 8 to the iso storage 
 
 > Important: We need at least for each virtual machine 50GB Space 400 GB space is needed.
 
-## RHEL ISO:
+### RHEL ISO:
 
 Before we start our installation we need to ensure that we have downloaded rhel-8.1-x86_64-dvd.iso to /mnt/ocp_isos/rhel-8.1-x86_64-dvd.iso. In our Workshop this has already been done. If you are doing this on your own download the rhel 8.1 iso from RedHat and place it in our ocp_isos directory. If you rename the iso file adjust the virt-install.sh for services machine and workstation accordingly
 
-## Create VM Disk:
+### Create VM Disk:
 
 To create the disk use this command in the directory of the images storage pool:
 

@@ -279,7 +279,6 @@ A few things will happen:
 * The Couchbase dashboard will show 4 instances once the Pod is created
 
 * The Couchbase dashboard will show that the cluster is being rebalanced
-
 - Your cluster dashboard should dynamically update to show the progress:
 
 - After the cluster is scaled up to 4, try scaling back down to 3:

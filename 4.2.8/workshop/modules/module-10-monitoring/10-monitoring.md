@@ -10,14 +10,20 @@ There is no ConfigMap created as part of the installation. Without one, the
 operator will assume default settings, as we can see, this is not defined:
 
 ```
-oc get configmap cluster-monitoring-config -n openshift-monitoring
+$ oc get configmap cluster-monitoring-config -n openshift-monitoring
+```
+
+```
 Error from server (NotFound): configmaps "cluster-monitoring-config" not found
 ```
 
 Even with the default settings, The operator will create several ConfigMap objects for the various monitoring stack components, and you can see them, too:
 
 ```
-oc get configmap -n openshift-monitoring
+$ oc get configmap -n openshift-monitoring
+```
+
+```
 NAME                                                  DATA   AGE
 adapter-config                                        1      34h
 grafana-dashboard-etcd                                1      34h
@@ -54,7 +60,11 @@ configmap/cluster-monitoring-config created
   infrastructure nodes with the following command:
 
 ```
-oc get pod -w -n openshift-monitoring
+$ oc get pod -w -n openshift-monitoring
+```
+
+```
+
 NAME                                           READY     STATUS              RESTARTS   AGE
 alertmanager-main-0                            3/3       Running             0          16h
 alertmanager-main-1                            3/3       Running             0          16h

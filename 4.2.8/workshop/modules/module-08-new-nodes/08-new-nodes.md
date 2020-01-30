@@ -23,7 +23,10 @@ virsh start --domain worker03.lab.example.com
 Now we need to do the same steps as in the cluster installation:
 
 ```
-virsh list --all
+[root@hypervisor ~]# virsh list --all
+```
+
+```
 Id    Name                           Status
 ----------------------------------------------------
  15    workstation.lab.example.com    laufend
@@ -39,7 +42,10 @@ Id    Name                           Status
 After the worker03 node has been installed we can't see him in the list of nodes:
 
 ```
-[root@services ~] oc get nodes
+[root@services ~]# oc get nodes
+```
+
+```
 NAME       STATUS   ROLES           AGE    VERSION
 master01   Ready    master,worker   21h    v1.14.6+6ac6aa4b0
 master02   Ready    master,worker   21h    v1.14.6+6ac6aa4b0
@@ -52,12 +58,15 @@ When we look at the csr's in our cluster we can see that some are in pending mod
 
 ```
 [root@services ~]# oc get csr
+```
+
+```
 NAME        AGE     REQUESTOR                                                                   CONDITION
 csr-f6tsc   18m     system:serviceaccount:openshift-machine-config-operator:node-bootstrapper   Pending
 csr-lrc8f   3m46s   system:serviceaccount:openshift-machine-config-operator:node-bootstrapper   Pending
 ```
 
-we need to approve all pending certificates
+we need to approve all pending certificates:
 
 ```
 oc adm certificate approve CERTIFICATE
@@ -67,6 +76,9 @@ We need a secound round:
 
 ```
 [root@services ~]# oc get csr
+```
+
+```
 NAME        AGE     REQUESTOR                                                                   CONDITION
 csr-72t87   4s      system:node:worker03                                                        Pending
 csr-f6tsc   20m     system:serviceaccount:openshift-machine-config-operator:node-bootstrapper   Approved,Issued
@@ -83,6 +95,10 @@ After a couple of minutes the machine should be up and running and part of the c
 
 ```
 [root@services ~] oc get nodes
+```
+
+```
+
 master01   Ready    master,worker   21h    v1.14.6+6ac6aa4b0
 master02   Ready    master,worker   21h    v1.14.6+6ac6aa4b0
 master03   Ready    master,worker   21h    v1.14.6+6ac6aa4b0

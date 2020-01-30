@@ -114,7 +114,6 @@ $ oc get deployments -n openshift-cluster-version
 ```
 
 ```
-
 NAME                       DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
 cluster-version-operator   1         1         1            1           2h
 ....
@@ -123,8 +122,10 @@ cluster-version-operator   1         1         1            1           2h
 You can also view the current version of the OpenShift cluster and give you a high-level indication of the status:
 
 ```
-oc get clusterversion
+$ oc get clusterversion
+```
 
+```
 NAME      VERSION   AVAILABLE   PROGRESSING   SINCE   STATUS
 version   4.2.8     True        False         14h     Cluster version is 4.2.8
 ```
@@ -132,8 +133,10 @@ version   4.2.8     True        False         14h     Cluster version is 4.2.8
 If you want to review a list of operators that the cluster version operator is controlling, along with their status, you can ask for a list of the cluster operators:
 
 ```
-oc get clusteroperator
+$ oc get clusteroperator
+```
 
+```
 NAME                                       VERSION   AVAILABLE   PROGRESSING   DEGRADED   SINCE
 authentication                             4.2.8     True        False         False      15h
 cloud-credential                           4.2.8     True        False         False      15h
@@ -164,12 +167,14 @@ service-catalog-controller-manager         4.2.8     True        False         F
 storage                                    4.2.8     True        False         False      15h
 ```
 
-Or a more comprehensive way of getting a list of operators running on the cluster, along with the link to the code, the documentation, and the commit that provided the functionality is as follows
+Or a more comprehensive way of getting a list of operators running on the cluster, along with the link to the code, the documentation, and the commit that provided the functionality is as follows:
 
 ```
- oc adm release info --commits
+$ oc adm release info --commits
+```
 
- Name:          4.2.8
+```
+Name:          4.2.8
 Digest:        sha256:4bf307b98beba4d42da3316464013eac120c6e5a398646863ef92b0e2c621230
 Created:       2019-11-21T09:36:15Z
 OS/Arch:       linux/amd64
@@ -294,7 +299,7 @@ Images:
 We can also rsh (remote shell access) into the running Operator and see the various manifests associated with the installed release of OpenShift:
 
 ```
- oc rsh -n openshift-cluster-version deployments/cluster-version-operator
+ $ oc rsh -n openshift-cluster-version deployments/cluster-version-operator
 ....
 ```
 
@@ -637,12 +642,13 @@ total 3100
 -r--r--r--. 1 root root    251 Nov 19 17:16 release-metadata
 ```
 
-We will see a number of .yaml files in this directory; these are manifests that describe each of the operators and how they're applied. Feel free to take a look at some of these to give you an idea of what it's doing.
+We will see a number of .yaml files in this directory; these are manifests that describe each of the operators and how they're applied. Feel free to take a look at some of these to give you an idea of what it's doing:
 
 ```
-cat /release-manifests/0000_50_console-operator_00-crd-operator-config.yaml
+$ cat /release-manifests/0000_50_console-operator_00-crd-operator-config.yaml
+```
 
-
+```
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
@@ -701,8 +707,16 @@ exit
 If we want to look at what the cluster operator has done since it was launched, we can execute the following:
 
 ```
- $ oc logs deployments/cluster-version-operator -n openshift-cluster-version > operatorlog.txt
+$ oc logs deployments/cluster-version-operator -n openshift-cluster-version > operatorlog.txt
+```
+
+```
 [~] $ tail operatorlog.txt
+```
+
+```
+
+
 
 I1212 12:51:49.032584       1 cvo.go:354] Finished syncing cluster version "openshift-cluster-version/version" (212.863µs)
 I1212 12:52:04.032628       1 cvo.go:352] Started syncing cluster version "openshift-cluster-version/version" (2019-12-12 12:52:04.032609397 +0000 UTC m=+54995.288726666)
