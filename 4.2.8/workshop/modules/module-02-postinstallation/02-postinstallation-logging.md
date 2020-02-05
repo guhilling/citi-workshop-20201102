@@ -45,7 +45,7 @@ metadata:
 
 ### Deploy the ES Operator
 
-Create an Operator Group object YAML file (for example, og-es.yaml) for the Elasticsearch operator and create using `oc create -f og-es.yaml`:
+Create two Operator Group object YAML files (for example, og-es1.yaml and og-es2.yaml) for the Elasticsearch operator and create using `oc create -f og-es1.yaml oc create -f og-es1.yaml`:
 
 ```
 apiVersion: operators.coreos.com/v1
@@ -54,6 +54,18 @@ metadata:
   name: openshift-operators-redhat
   namespace: openshift-operators-redhat 
 spec: {}
+```
+and:
+
+```
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: openshift-operators-redhat
+  namespace: openshift-operators-redhat 
+spec:
+  targetNamespaces:
+  - openshift-logging
 ```
 
 Use the following command to get the channel value required for the next step.
