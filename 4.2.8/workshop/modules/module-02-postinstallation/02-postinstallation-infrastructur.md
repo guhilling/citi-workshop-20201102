@@ -151,9 +151,9 @@ We would eventually reconfigure our Ingress Controller deploying OpenShift Route
 ```
 spec:
  nodePlacement:
- nodeSelector:
- matchLabels:
- node-role.kubernetes.io/infra: ""
+   nodeSelector:
+     matchLabels:
+       node-role.kubernetes.io/infra: ""
  replicas: 2
 ```
 
