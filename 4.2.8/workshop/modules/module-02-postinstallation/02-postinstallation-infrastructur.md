@@ -112,15 +112,16 @@ Check that the mc are present now:
 Once `oc get mc` includes that rendered configuration, we would make sure the MachineConfig Operator is done with our MachineConfigPool and start re-labeling nodes accordingly:
 
 ```
-[root@services ~]# oc label node infra1.nodes.example.com node-role.kubernetes.io/infra=
-node/infra1.nodes.example.com labeled
+[root@services ~]# oc label node worker03 node-role.kubernetes.io/infra=
+[root@services ~]# oc label node worker04 node-role.kubernetes.io/infra=
+
 ```
 
 and:
 
 ```
-[root@services ~]# oc label node infra1.nodes.example.com node-role.kubernetes.io/worker-
-node/infra1.nodes.example.com labeled
+[root@services ~]# oc label node worker03 node-role.kubernetes.io/worker-
+[root@services ~]# oc label node worker04 node-role.kubernetes.io/worker-
 ```
 
 From there, our node would be set unschedulable, drained, and rebooted. Our customized MachineConfig should have changed the role label applied when our node boots, which we may confirm once it is done restarting
