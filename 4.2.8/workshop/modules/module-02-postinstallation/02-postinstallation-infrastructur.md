@@ -113,7 +113,7 @@ Once `oc get mc` includes that rendered configuration, we would make sure the Ma
 
 ```
 [root@services ~]# oc label node worker03 node-role.kubernetes.io/infra=
-[root@services ~]# oc label node worker04 node-role.kubernetes.io/infra=
+node/worker04 labeled
 
 ```
 
@@ -121,7 +121,7 @@ and:
 
 ```
 [root@services ~]# oc label node worker03 node-role.kubernetes.io/worker-
-[root@services ~]# oc label node worker04 node-role.kubernetes.io/worker-
+node/worker04 labeled
 ```
 
 From there, our node would be set unschedulable, drained, and rebooted. Our customized MachineConfig should have changed the role label applied when our node boots, which we may confirm once it is done restarting
@@ -135,9 +135,10 @@ NAME STATUS ROLES AGE VERSION
 master01 Ready master,worker 29h v1.14.6+cebabbf4a
 master02 Ready master,worker 29h v1.14.6+cebabbf4a
 master03 Ready master,worker 29h v1.14.6+cebabbf4a
-infra01 Ready infra 29h v1.14.6+6ac6aa4b0
-infra02 Ready infra 29h v1.14.6+6ac6aa4b0
-worker03 Ready worker 25h v1.14.6+cebabbf4a
+worker01 Ready worker        29h v1.14.6+6ac6aa4b0
+worker02 Ready worker        29h v1.14.6+6ac6aa4b0
+worker03 Ready infra         25h v1.14.6+cebabbf4a
+worker04 Ready infra         25h v1.14.6+cebabbf4a
 ```
 
 When our node is back, we would proceed with the next infra node.
