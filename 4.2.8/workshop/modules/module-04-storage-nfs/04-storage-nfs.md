@@ -134,10 +134,6 @@ Finally, create the exports and restart the NFS server service:
 ```
 
 ```
-[root@services ~]# echo /data/nfs/sys-vols/monitoring/a-2 *(rw,sync,no_wdelay,no_root_squash,insecure,fsid=0) >> /etc/exports.d/openshift-sysvols-monitoring-am-2.exports
-```
-
-```
 [root@services ~]# echo /data/nfs/sys-vols/logging/es-1 *(rw,sync,no_wdelay,no_root_squash,insecure,fsid=0) >> /etc/exports.d/openshift-sysvols-elastic-1.exports
 ```
 
@@ -472,19 +468,19 @@ spec:
 apiVersion: v1
 kind: PersistentVolume
 metadata:
- name: monitoring-pv-1
- labels:
- infrapvc: prometheus
+  name: monitoring-pv-1
+  labels:
+    infrapvc: prometheus
 spec:
- capacity:
- storage: 10Gi
- accessModes:
- - ReadWriteOnce
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
  persistentVolumeReclaimPolicy: Retain
  nfs:
- path: /data/nfs/sys-vols/monitoring/p-1
- server: services.lab.example.com
- readOnly: false
+   path: /data/nfs/sys-vols/monitoring/p-1
+   server: services.lab.example.com
+   readOnly: false
 ```
 
 Create three YAML files for the AlertManager PVs as follows, pointing to the NFS server and respective shares '.../monitoring/a-0' to '.../monitoring/a-2' as follows:
@@ -520,19 +516,19 @@ spec:
 apiVersion: v1
 kind: PersistentVolume
 metadata:
- name: monitoring-alertmgr-pv-1
- labels:
- infrapvc: alertmanager
+  name: monitoring-alertmgr-pv-1
+  labels:
+    infrapvc: alertmanager
 spec:
- capacity:
- storage: 10Gi
+  capacity:
+    storage: 10Gi
  accessModes:
- - ReadWriteOnce
+   - ReadWriteOnce
  persistentVolumeReclaimPolicy: Retain
  nfs:
- path: /data/nfs/sys-vols/monitoring/a-1
- server: services.lab.example.com
- readOnly: false
+   path: /data/nfs/sys-vols/monitoring/a-1
+   server: services.lab.example.com
+   readOnly: false
 ```
 
 ```
