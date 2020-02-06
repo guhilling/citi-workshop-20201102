@@ -237,7 +237,7 @@ We will now create an example project and import the PVC. The PVC should get bou
 ```
 
 ```
-[root@services ~]# oc create -f nfs-pvc.yaml
+[root@services ~]# oc create -f /root/openshift/nfs-configuration/nfs-pvc.yaml
 ```
 
 ```
