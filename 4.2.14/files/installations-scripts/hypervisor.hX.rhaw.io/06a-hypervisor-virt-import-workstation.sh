@@ -1,2 +1,0 @@
-#!/bin/bash
-virt-install -n workstation.hX.rhaw.io --description "Workstation Machine for Openshift 4 Cluster" --os-type=Linux --os-variant=rhel7 --ram=8192 --vcpus=4 --disk path=/mnt/ocp_images/workstation.qcow2,bus=virtio,size=50 --graphics vnc,port=5910 --import --network network=ocp4-network,mac=52:54:00:af:bb:59
