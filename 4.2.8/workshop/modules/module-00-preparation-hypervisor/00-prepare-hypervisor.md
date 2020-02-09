@@ -57,6 +57,29 @@ Please execute the following command on your Hypervisor Machine:
 [root@hypervisor ~]# systemctl enable libvirtd --now
 ```
 
+### (optional) TMUX:
+
+> While not required it is recommended to run commands remotely on the hypervisor machine and later on on the services machine using a terminal multiplexer such as 'tmux'. This prevents terminal sessions to get lost in case of connection interruptions.
+
+To install 'tmux':
+
+```
+[root@hypervisor ~]# yum install -y tmux
+```
+
+Then simply start a session by:
+
+```
+[root@hypervisor ~]# tmux
+```
+
+See the following references for details about how to work with 'tmux'.
+
+References:
+
+- tmux community project: [https://github.com/tmux/tmux/wiki](https://github.com/tmux/tmux/wiki)
+- cheat sheet for 'tmux' commands: [https://tmuxcheatsheet.com/](https://tmuxcheatsheet.com/)
+
 ### Clone GIT Repository:
 
 For later in this workshop we need to clone the git repository that contains the complete workshop material and usefull helper scripts and playbooks that makes live easier.
