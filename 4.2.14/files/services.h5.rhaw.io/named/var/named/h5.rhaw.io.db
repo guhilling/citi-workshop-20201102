@@ -17,9 +17,9 @@ master03.ocp4            IN  A   192.168.100.23
 etcd-0.ocp4            IN  A   192.168.100.21
 etcd-1.ocp4            IN  A   192.168.100.22
 etcd-2.ocp4            IN  A   192.168.100.23
-api.ocp4               IN  A   192.168.100.254
+api.ocp4               IN  A   95.217.83.184
 api-int.ocp4           IN  A   192.168.100.254
-*.apps.ocp4            IN  A   192.168.100.254
+*.apps.ocp4            IN  A   95.217.83.184
 worker01.ocp4            IN  A   192.168.100.31
 worker02.ocp4            IN  A   192.168.100.32
 worker03.ocp4            IN  A   192.168.100.33
