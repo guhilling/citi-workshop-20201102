@@ -1,0 +1,2 @@
+#!/bin/bash
+virt-install -n services.hX.rhaw.io --description "Services Machine for Openshift 4 Cluster" --os-type=Linux --os-variant=rhel7 --ram=8192 --vcpus=4 --disk path=/mnt/ocp_images/services.qcow2,bus=virtio,size=50 --graphics vnc --import --network network=ocp4-network
