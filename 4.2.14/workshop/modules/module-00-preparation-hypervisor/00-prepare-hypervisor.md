@@ -46,26 +46,20 @@ Please execute the following command on your Hypervisor Machine:
 ```
 
 ```
-[root@hypervisor ~]# yum install git rsync cockpit cockpit-ws cockpit-dashboard cockpit-machines cockpit-system cockpit-storaged virt-install bash-completion  -y
-```
-
-```
-[root@hypervisor ~]# systemctl enable cockpit.socket
+[root@hypervisor ~]# yum install git rsync haproxy tmux virt-install bash-completion  -y
 ```
 
 ```
 [root@hypervisor ~]# systemctl enable libvirtd --now
 ```
 
-### (optional) TMUX:
+```
+[root@hypervisor ~]# systemctl enable haproxy --now
+```
+
+## TMUX:
 
 > While not required it is recommended to run commands remotely on the hypervisor machine and later on on the services machine using a terminal multiplexer such as 'tmux'. This prevents terminal sessions to get lost in case of connection interruptions.
-
-To install 'tmux':
-
-```
-[root@hypervisor ~]# yum install -y tmux
-```
 
 Then simply start a session by:
 
@@ -80,6 +74,104 @@ References:
 - tmux community project: [https://github.com/tmux/tmux/wiki](https://github.com/tmux/tmux/wiki)
 - cheat sheet for 'tmux' commands: [https://tmuxcheatsheet.com/](https://tmuxcheatsheet.com/)
 
+## Haproxy Configuration
+
+To access later our Openshift Cluster, we need to have a running Haproxy on the hypervisor.
+
+First we need to make a backup of the haproxy configuration:
+
+```
+[root@hypervisor ~]# cp /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg.default
+```
+
+Next we need to create a new haproxy configuration like the one below:
+
+We need to open the haproxy.cfg and make the changes accordingly:
+
+```
+[root@hypervisor ~]# vim /etc/haproxy/haproxy.cfg
+```
+
+Now we need to change the configuation that it looks like the one below:
+
+> Hint: Just delete the content of the existing haproxy.cfg, copy and paste the content from below and safe it with :wq!
+
+```
+global
+    log         127.0.0.1 local2 info
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     4000
+    user        haproxy
+    group       haproxy
+    daemon
+
+defaults
+    timeout connect         5s
+    timeout client          30s
+    timeout server          30s
+    log                     global
+
+frontend kubernetes_api
+    bind 0.0.0.0:6443
+    default_backend kubernetes_api
+
+backend kubernetes_api
+    balance roundrobin
+    option ssl-hello-chk
+    server bootstrap 192.168.100.10:6443 check
+    server master01 192.168.100.21:6443 check
+    server master02 192.168.100.22:6443 check
+    server master03 192.168.100.23:6443 check
+
+frontend router_https
+    bind 0.0.0.0:443
+    default_backend router_https
+
+backend router_https
+    balance roundrobin
+    option ssl-hello-chk
+    server worker01 192.168.100.31:443 check
+    server worker02 192.168.100.32:443 check
+    server worker03 192.168.100.33:443 check
+    server worker04 192.168.100.34:443 check
+
+frontend router_http
+    mode http
+    option httplog
+    bind 0.0.0.0:80
+    default_backend router_http
+
+backend router_http
+    mode http
+    balance roundrobin
+    server worker01 192.168.100.31:80 check
+    server worker02 192.168.100.32:80 check
+    server worker03 192.168.100.33:80 check
+```
+
+Now we need to restart haproxy that our changes take place:
+
+```
+[root@hypervisor ~]# systemctl restart haproxy
+```
+
+then we check the state of haproxy:
+
+```
+[root@hypervisor ~]# systemctl status haproxy
+```
+
+it should similar to this:
+
+```
+● haproxy.service - HAProxy Load Balancer
+   Loaded: loaded (/usr/lib/systemd/system/haproxy.service; disabled; vendor preset: disabled)
+   Active: active (running) since Mon 2020-02-10 00:14:54 CET; 11h ago
+ Main PID: 13598 (haproxy-systemd)
+    Tasks: 3
+...
+```
 
 ### Clone GIT Repository:
 
@@ -88,7 +180,7 @@ For later in this workshop we need to clone the git repository that contains the
 From the root directory on your hypervisor execute:
 
 ```
-[root@hypervisor ~]# git clone git@gitlab.com:dirkdavidis/openshift-4-gls-workshop.git
+[root@hypervisor ~]# git clone ssh://git@gitlab.consulting.redhat.com:2222/ddavidis/openshift-gls-gps-workshop.git
 ```
 
 On the Hypervisor in your root directory /root you will find now a openshift-4-gls-workshop directory. if you access this directory you will find a directory called: 4.2.14 this is the actual workshop version, it is based upon the release taken for this workshop.
@@ -325,6 +417,7 @@ bind-utils
 dhcp-server
 tftp-server
 syslinux
+haproxy
 httpd
 httpd-tools
 haproxy
@@ -340,22 +433,6 @@ nfs-utils
 container-selinux
 ```
 
-### Workstation Virtual Machine:
-
-```
-[root@hypervisor ~]# /root/openshift-4-gls-workshop/4.2.14/files/installations-scripts/hypervisor.hX.rhaw.io/05-hypervisor-virt-install-workstation.sh &
-```
-
-Installation will run in the background. Workstation is not needed for installation.
-
-The following listing show the kickstart parameters used by virt-install.
-
-## workstation.hX.rhaw.io.ks:
-
-```
-
-```
-
 ## Import already provisioned virtual machine images as new virtual machine:
 
 If the services and workstation machines are already provisioned, then you just need to create them with:
@@ -364,12 +441,6 @@ If the services and workstation machines are already provisioned, then you just 
 
 ```
 [root@hypervisor ~]# virt-install -n services.hX.rhaw.io --description "Services Machine for Openshift 4 Cluster" --os-type=Linux --os-variant=rhel7 --ram=8192 --vcpus=4 --disk path=/mnt/ocp_images/services.qcow2,bus=virtio,size=50 --graphics vnc,port=5910 --import --network network=ocp4-network
-```
-
-### Workstation Virtual Machine:
-
-```
-[root@hypervisor ~]# virt-install -n workstation.hX.rhaw.io --description "Workstation Machine for Openshift 4 Cluster" --os-type=Linux --os-variant=rhel7 --ram=8192 --vcpus=4 --disk path=/mnt/ocp_images/workstation.qcow2,bus=virtio,size=50 --graphics vnc,port=5910 --import --network network=ocp4-network,mac=52:54:00:af:bb:59
 ```
 
 ### Services Virtual Machine:
@@ -384,19 +455,7 @@ gateway:    192.168.100.1
 dns server: 192.168.100.1
 ```
 
-### Workstation Virtual Machine:
-
-Workstastion Machine is configured as follows:
-
-```
-hostname: workstation.hX.rhaw.io
-ip address: 192.168.100.253
-netmask:    255.255.255.0
-gateway:    192.168.100.1
-dns server: 192.168.100.1
-```
-
-> Important: In this workshop the services and the workstation virtual machines are already provisioned. So there is no need to create them.
+> Important: In this workshop the services  virtual machine is already provisioned. So there is no need to create them.
 
 > In these examples we will create the virtual disks, with the virt-install command. This will consume the complete storage defined in the virt-install options. If we want to save space we need to create the virtual disks images before with the qemu command provided, and then change the virt-install command options from --disk path=PATH to --import=PATH.
 
