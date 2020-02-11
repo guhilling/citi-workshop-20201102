@@ -138,6 +138,12 @@ To check the cluster is up and running type in the following command:
 
 ```
 [root@services ~]# oc get nodes
+NAME       STATUS   ROLES           AGE   VERSION
+master01   Ready    master,worker   10m   v1.16.2
+master02   Ready    master,worker   10m   v1.16.2
+master03   Ready    master,worker   10m   v1.16.2
+worker01   Ready    worker          10m   v1.16.2
+worker02   Ready    worker          10m   v1.16.2
 ```
 
 You should get an output of six machines in state Ready.
@@ -148,15 +154,6 @@ When you add machines to a cluster, two pending certificates signing request (CS
 
 ```
 [root@services ~]# oc get nodes
-NAME       STATUS   ROLES           AGE   VERSION
-master01   Ready    master,worker   10m   v1.16.2
-master02   Ready    master,worker   10m   v1.16.2
-master03   Ready    master,worker   10m   v1.16.2
-worker01   Ready    worker          10m   v1.16.2
-worker02   Ready    worker          10m   v1.16.2
-```
-
-```
 NAME      STATUS    ROLES           AGE   VERSION
 master01  Ready     master,worker   10m   v1.16.2
 master02  Ready     master,worker   10m   v1.16.2
