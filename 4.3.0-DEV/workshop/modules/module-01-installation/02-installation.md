@@ -235,10 +235,6 @@ Now we can watch the creation of the missing pods:
 
 ```
 [root@services ~]# watch oc get pod -n openshift-image-registry
-```
-
-```
-
 NAME                                              READY   STATUS              RESTARTS   AGE
 cluster-image-registry-operator-56f5f56b8-ssjxj   2/2     Running             0          8m34s
 image-registry-57944b948b-42jvh                   0/1     ContainerCreating   0          6s
@@ -259,10 +255,7 @@ After we complete the operator configuration, you can finish installing the clus
 We need to confirm that all components are up and running.
 
 ```
- [root@services ~]# watch -n5 oc get clusteroperators
-```
-
-```
+[root@services ~]# watch -n5 oc get clusteroperators
 NAME                                       VERSION   AVAILABLE   PROGRESSING   DEGRADED   SINCE
 authentication                             4.3.0     True        False         False      4m41s
 cloud-credential                           4.3.0     True        False         False      25m
