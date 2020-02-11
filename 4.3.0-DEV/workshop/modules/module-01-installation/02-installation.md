@@ -148,10 +148,21 @@ When you add machines to a cluster, two pending certificates signing request (CS
 
 ```
 [root@services ~]# oc get nodes
+NAME       STATUS   ROLES           AGE   VERSION
+master01   Ready    master,worker   10m   v1.16.2
+master02   Ready    master,worker   10m   v1.16.2
+master03   Ready    master,worker   10m   v1.16.2
+worker01   Ready    worker          10m   v1.16.2
+worker02   Ready    worker          10m   v1.16.2
 ```
 
 ```
-NAME      STATUS    ROLES   AGE  VERSIONmaster  Ready     master  63m  v1.14.6+c4799753cmaster2  Ready     master  63m  v1.14.6+c4799753cmaster3  Ready     master  64m  v1.14.6+c4799753cworker1  NotReady  worker  76s  v1.14.6+c4799753cworker2  NotReady  worker  70s  v1.14.6+c4799753c...
+NAME      STATUS    ROLES           AGE   VERSION
+master01  Ready     master,worker   10m   v1.16.2
+master02  Ready     master,worker   10m   v1.16.2
+master03  Ready     master,worker   10m   v1.16.2
+worker01  NotReady  worker          10m   v1.16.2
+worker02  NotReady  worker          10m   v1.16.2
 ```
 
 The output lists all of the machines that we created.
@@ -163,7 +174,11 @@ Now we need to review the pending certificate signing requests (CSRs) and ensure
 ```
 
 ```
-NAME        AGE     REQUESTOR                                                                   CONDITIONcsr-8b2br   15m     system:serviceaccount:openshift-machine-config-operator:node-bootstrapper   Pendingcsr-8vnps   15m     system:serviceaccount:openshift-machine-config-operator:node-bootstrapper   Pendingcsr-bfd72   5m26s   system:node:ip-10-0-50-126.us-east-2.compute.internal                       Pendingcsr-c57lv   5m26s   system:node:ip-10-0-95-157.us-east-2.compute.internal                       Pending
+NAME        AGE     REQUESTOR                                                                   CONDITION
+csr-8b2br   15m     system:serviceaccount:openshift-machine-config-operator:node-bootstrapper   Pending
+csr-8vnps   15m     system:serviceaccount:openshift-machine-config-operator:node-bootstrapper   Pending
+csr-bfd72   5m26s   system:node:ip-10-0-50-126.us-east-2.compute.internal                       Pending
+csr-c57lv   5m26s   system:node:ip-10-0-95-157.us-east-2.compute.internal                       Pending
 ```
 
 > |
@@ -199,24 +214,40 @@ First we check if we do not have a registry pod:
 ```
 
 ```
-NAME                                              READY   STATUS    RESTARTS   AGEcluster-image-registry-operator-56f5f56b8-ssjxj   2/2     Running   0          6m40s
+NAME                                              READY   STATUS    RESTARTS   AGE
+cluster-image-registry-operator-56f5f56b8-ssjxj   2/2     Running   0          6m40s
 ```
-
-If no pod is showin up, we need to patch the image registry operator with the following command:
 
 ```
 [root@services ~]# oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{"spec":{"storage":{"emptyDir":{}}}}'
+config.imageregistry.operator.openshift.io/cluster patched
 ```
 
-Now we just a couple of minutes 1 -2 and then looking for the registry pods again:
+On platforms that do not provide shareable object storage, the OpenShift Image Registry Operator bootstraps itself as `Removed`. This allows openshift-installer to complete installations on these platform types.
+After installation, you must edit the Image Registry Operator configuration to switch the ManagementState from `Removed` to `Managed`.
 
 ```
-[root@services ~]# oc get pod -n openshift-image-registry
+[root@services ~]# oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{"spec":{"managementState":"Managed"}}'
+config.imageregistry.operator.openshift.io/cluster patched
+```
+
+Now we can watch the creation of the missing pods:
+
+```
+[root@services ~]# watch oc get pod -n openshift-image-registry
 ```
 
 ```
 
-NAME                                              READY   STATUS              RESTARTS   AGEcluster-image-registry-operator-56f5f56b8-ssjxj   2/2     Running             0          8m34simage-registry-57944b948b-42jvh                   0/1     ContainerCreating   0          6simage-registry-64d649744c-bhn7k                   0/1     ContainerCreating   0          6snode-ca-gn8v8                                     0/1     ContainerCreating   0          6snode-ca-mzbwz                                     0/1     ContainerCreating   0          6snode-ca-pxnwx                                     0/1     ContainerCreating   0          6snode-ca-ql7s5                                     0/1     ContainerCreating   0          7snode-ca-wql85                                     0/1     ContainerCreating   0          6s
+NAME                                              READY   STATUS              RESTARTS   AGE
+cluster-image-registry-operator-56f5f56b8-ssjxj   2/2     Running             0          8m34s
+image-registry-57944b948b-42jvh                   0/1     ContainerCreating   0          6s
+image-registry-64d649744c-bhn7k                   0/1     ContainerCreating   0          6s
+node-ca-gn8v8                                     0/1     ContainerCreating   0          6s
+node-ca-mzbwz                                     0/1     ContainerCreating   0          6s
+node-ca-pxnwx                                     0/1     ContainerCreating   0          6s
+node-ca-ql7s5                                     0/1     ContainerCreating   0          7s
+node-ca-wql85                                     0/1     ContainerCreating   0          6s
 ```
 
 The pods should now be up and running.
@@ -232,9 +263,36 @@ We need to confirm that all components are up and running.
 ```
 
 ```
-NAME                                 VERSION   AVAILABLE   PROGRESSING   DEGRADED   SINCEauthentication                       4.2.0     True        False         False      10mcloud-credential                     4.2.0     True        False         False      22mcluster-autoscaler                   4.2.0     True        False         False      21mconsole                              4.2.0     True        False         False      10mdns                                  4.2.0     True        False         False      21mimage-registry                       4.2.0     True        False         False      16mingress                              4.2.0     True        False         False      16mkube-apiserver                       4.2.0     True        False         False      19mkube-controller-manager              4.2.0     True        False         False      18mkube-scheduler                       4.2.0     True        False         False      22mmachine-api                          4.2.0     True        False         False      22mmachine-config                       4.2.0     True        False         False      18mmarketplace                          4.2.0     True        False         False      18mmonitoring                           4.2.0     True        False         False      18mnetwork                              4.2.0     True        False         False      16mnode-tuning                          4.2.0     True        False         False      21mopenshift-apiserver                  4.2.0     True        False         False      21mopenshift-controller-manager         4.2.0     True        False         False      17mopenshift-samples                    4.2.0     True        False         False      14moperator-lifecycle-manager           4.2.0     True        False         False      21moperator-lifecycle-manager-catalog   4.2.0     True        False         False      21mservice-ca                           4.2.0     True        False         False      21mservice-catalog-apiserver            4.2.0     True        False         False      16mservice-catalog-controller-manager   4.2.0     True        False         False      16mstorage                              4.2.0     True        False         False      16m
+NAME                                       VERSION   AVAILABLE   PROGRESSING   DEGRADED   SINCE
+authentication                             4.3.0     True        False         False      4m41s
+cloud-credential                           4.3.0     True        False         False      25m
+cluster-autoscaler                         4.3.0     True        False         False      15m
+console                                    4.3.0     True        False         False      11m
+dns                                        4.3.0     True        False         False      19m
+image-registry                             4.3.0     True        False         False      16m
+ingress                                    4.3.0     True        False         False      15m
+insights                                   4.3.0     True        False         False      21m
+kube-apiserver                             4.3.0     True        False         False      17m
+kube-controller-manager                    4.3.0     True        False         False      17m
+kube-scheduler                             4.3.0     True        False         False      18m
+machine-api                                4.3.0     True        False         False      20m
+machine-config                             4.3.0     True        False         False      19m
+marketplace                                4.3.0     True        False         False      15m
+monitoring                                 4.3.0     True        False         False      10m
+network                                    4.3.0     True        False         False      21m
+node-tuning                                4.3.0     True        False         False      15m
+openshift-apiserver                        4.3.0     True        False         False      15m
+openshift-controller-manager               4.3.0     True        False         False      18m
+openshift-samples                          4.3.0     True        False         False      14m
+operator-lifecycle-manager                 4.3.0     True        False         False      20m
+operator-lifecycle-manager-catalog         4.3.0     True        False         False      20m
+operator-lifecycle-manager-packageserver   4.3.0     True        False         False      15m
+service-ca                                 4.3.0     True        False         False      21m
+service-catalog-apiserver                  4.3.0     True        False         False      16m
+service-catalog-controller-manager         4.3.0     True        False         False      16m
+storage                                    4.3.0     True        False         False      16m
 ```
 
-  When all of the cluster Operators are available (the kube-apiserver operator is last in state PROGRESSING=True and takes roughly 15min to finish), we can complete the installation.
+  When all of the cluster Operators are available (the kube-apiserver operator is last in state PROGRESSING True and takes roughly 15min to finish), we can complete the installation.
 
 > The Ignition config files that the installation program generates contain certificates that expire after 24 hours. You must keep the cluster running for 24 hours in a non-degraded state to ensure that the first certificate rotation has finished.
