@@ -5,7 +5,9 @@
 #
 
 set -euo pipefail
-for s in ????-services.hX.rhaw.io*.sh
+for s in ????-services*.sh
 do
-	./$s
+	echo "Running ${s} ..."
+	./${s}
+	echo "Finished ${s}"
 done

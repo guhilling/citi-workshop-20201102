@@ -11,3 +11,4 @@ rm -Rf openshift-client-linux-4.3.0.tar.gz
 rm -Rf oc
 rm -Rf kubectl
 rm -Rf openshift-install
+rm -Rf README.md
