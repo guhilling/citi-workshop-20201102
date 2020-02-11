@@ -12,9 +12,9 @@ worker 03
 virt-install -n worker03.hX.rhaw.io --description "Worker03 Machine for Openshift 4 Cluster" --os-type=Linux --os-variant=rhel7 --ram=8192 --vcpus=4 --noreboot --disk path=/mnt/ocp_images/worker03.qcow2,bus=virtio,size=50 --graphics none --pxe --network network=ocp4-network,mac=52:54:00:fe:e5:e3
 ```
 
-After we have done this, the node will power on and will be pxe booted. After that he will fetch the CoreOS image and the related ignition file and will start the installation.
+After we have done this, the node will power on and will be pxe booted. After that it will fetch the CoreOS image and the related ignition file and will start the installation.
 
-The Node will stop after installation and we need to start the node with the command:
+The node will stop after installation and we need to start the node with the command:
 
 ```
 virsh start --domain worker03.hX.rhaw.io
@@ -39,7 +39,7 @@ Id    Name                           Status
  30    worker02.hX.rhaw.io       laufend
 ```
 
-After the worker03 node has been installed we can't see him in the list of nodes:
+After the worker03 node has been installed we can't see it in the list of nodes:
 
 ```
 [root@services ~]# oc get nodes
