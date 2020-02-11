@@ -211,9 +211,6 @@ First we check if we do not have a registry pod:
 
 ```
 [root@services ~]# oc get pod -n openshift-image-registry
-```
-
-```
 NAME                                              READY   STATUS    RESTARTS   AGE
 cluster-image-registry-operator-56f5f56b8-ssjxj   2/2     Running   0          6m40s
 ```
