@@ -209,19 +209,19 @@ then we need to create the default file with the following content:
 default menu.c32
 prompt 0
 timeout 30
-menu title **** OpenShift 4 PXE Boot Menu ****
+menu title **** OpenShift 4.3 PXE Boot Menu ****
 
 label bootstrap
- kernel /openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-kernel
- append ip=dhcp rd.neednet=1 coreos.inst.install_dev=vda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.2.0/images/rhcos-4.2.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.2.0/ignitions/bootstrap.ign initrd=/openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-initramfs.img
+ kernel /openshift4/4.3.0/rhcos-4.3.0-x86_64-installer-kernel
+ append ip=dhcp rd.neednet=1 coreos.inst.install_dev=vda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.3.0/images/rhcos-4.3.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.3.0/ignitions/bootstrap.ign initrd=/openshift4/4.3.0/rhcos-4.3.0-x86_64-installer-initramfs.img
 
 label master
- kernel /openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-kernel
- append ip=dhcp rd.neednet=1 coreos.inst.install_dev=vda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.2.0/images/rhcos-4.2.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.2.0/ignitions/master.ign initrd=/openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-initramfs.img
+ kernel /openshift4/4.3.0/rhcos-4.3.0-x86_64-installer-kernel
+ append ip=dhcp rd.neednet=1 coreos.inst.install_dev=vda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.3.0/images/rhcos-4.3.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.3.0/ignitions/master.ign initrd=/openshift4/4.3.0/rhcos-4.3.0-x86_64-installer-initramfs.img
 
 label worker
- kernel /openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-kernel
- append ip=dhcp rd.neednet=1 coreos.inst.install_dev=vda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.2.0/images/rhcos-4.2.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.2.0/ignitions/worker.ign initrd=/openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-initramfs.img
+ kernel /openshift4/4.3.0/rhcos-4.3.0-x86_64-installer-kernel
+ append ip=dhcp rd.neednet=1 coreos.inst.install_dev=vda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.3.0/images/rhcos-4.3.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.3.0/ignitions/worker.ign initrd=/openshift4/4.3.0/rhcos-4.3.0-x86_64-installer-initramfs.img
 ```
 
 > Important: Please adjust the IP address to the ip address of your environment
@@ -249,8 +249,8 @@ default bootstrap
 prompt 0
 timeout 30
 label bootstrap
- kernel /openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-kernel
- append ip=dhcp rd.neednet=1 coreos.inst.install_dev=vda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.2.0/images/rhcos-4.2.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.2.0/ignitions/bootstrap.ign initrd=/openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-initramfs.img
+ kernel /openshift4/4.3.0/rhcos-4.3.0-x86_64-installer-kernel
+ append ip=dhcp rd.neednet=1 coreos.inst.install_dev=vda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.3.0/images/rhcos-4.3.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.3.0/ignitions/bootstrap.ign initrd=/openshift4/4.3.0/rhcos-4.3.0-x86_64-installer-initramfs.img
 ```
 
 The file for each master  node needs to be:
@@ -260,8 +260,8 @@ default master
 prompt 0
 timeout 30
 label master
- kernel /openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-kernel
- append ip=dhcp rd.neednet=1 coreos.inst.install_dev=vda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.2.0/images/rhcos-4.2.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.2.0/ignitions/master.ign initrd=/openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-initramfs.img
+ kernel /openshift4/4.3.0/rhcos-4.3.0-x86_64-installer-kernel
+ append ip=dhcp rd.neednet=1 coreos.inst.install_dev=vda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.3.0/images/rhcos-4.3.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.3.0/ignitions/master.ign initrd=/openshift4/4.3.0/rhcos-4.3.0-x86_64-installer-initramfs.img
 ```
 
 The file for each worker node needs to be:
@@ -271,8 +271,8 @@ default worker
 prompt 0
 timeout 30
 label worker
- kernel /openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-kernel
- append ip=dhcp rd.neednet=1 coreos.inst.install_dev=vda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.2.0/images/rhcos-4.2.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.2.0/ignitions/worker.ign initrd=/openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-initramfs.img
+ kernel /openshift4/4.3.0/rhcos-4.3.0-x86_64-installer-kernel
+ append ip=dhcp rd.neednet=1 coreos.inst.install_dev=vda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.3.0/images/rhcos-4.3.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.3.0/ignitions/worker.ign initrd=/openshift4/4.3.0/rhcos-4.3.0-x86_64-installer-initramfs.img
 ```
 
 > Each of the files we now create needs to have a 01- in front and then the MAC Address of each node seperated with a dash!!!
@@ -318,25 +318,25 @@ After that we restart httpd that our changes taking place:
 Now we need to create a directory for hosting the kernel and initramfs for PXE boot:
 
 ```
-[root@services ~]# mkdir -p /var/lib/tftpboot/openshift4/4.2.0/
+[root@services ~]# mkdir -p /var/lib/tftpboot/openshift4/4.3.0/
 ```
 
 access this directory:
 
 ```
-[root@services ~]# cd /var/lib/tftpboot/openshift4/4.2.0/
+[root@services ~]# cd /var/lib/tftpboot/openshift4/4.3.0/
 ```
 
 and download the kernel file to this directory:
 
 ```
-[root@services ~]# wget https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.2/latest/rhcos-4.2.0-x86_64-installer-kernel
+[root@services ~]# wget https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.3/4.3.0/rhcos-4.3.0-x86_64-installer-kernel
 ```
 
 Then the CoreOS Installer initramfs image:
 
 ```
-[root@services ~]# wget https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.2/latest/rhcos-4.2.0-x86_64-installer-initramfs.img
+[root@services ~]# wget https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.3/4.3.0/rhcos-4.3.0-x86_64-installer-initramfs.img
 ```
 
 Now we ned to relabel the files for selinux:
@@ -348,15 +348,15 @@ Now we ned to relabel the files for selinux:
 Next we need to host the Red Hat Core OS metal BIOS image:
 
 ```
-[root@services ~]# mkdir -p /var/www/html/openshift4/4.2.0/images/
+[root@services ~]# mkdir -p /var/www/html/openshift4/4.3.0/images/
 ```
 
 ```
-[root@services ~]# cd  /var/www/html/openshift4/4.2.0/images/
+[root@services ~]# cd  /var/www/html/openshift4/4.3.0/images/
 ```
 
 ```
-[root@services ~]# wget https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.2/latest/rhcos-4.2.0-x86_64-metal-bios.raw.gz
+[root@services ~]# wget https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.3/4.3.0/rhcos-4.3.0-x86_64-metal.raw.gz
 ```
 
 ```
@@ -474,19 +474,19 @@ First of all we need to download and install the Openshift client and the instal
 ```
 
 ```
-[root@services ~]# wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.2.14/openshift-install-linux-4.2.14.tar.gz
+[root@services ~]# wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.3.0/openshift-install-linux-4.3.0.tar.gz
 ```
 
 ```
-[root@services ~]# wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.2.14/openshift-client-linux-4.2.14.tar.gz
+[root@services ~]# wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.3.0/openshift-client-linux-4.3.0.tar.gz
 ```
 
 ```
-[root@services ~]# tar -xvf openshift-install-linux-4.2.14.tar.gz
+[root@services ~]# tar -xvf openshift-install-linux-4.3.0.tar.gz
 ```
 
 ```
-[root@services ~]# tar -xvf openshift-client-linux-4.2.14.tar.gz
+[root@services ~]# tar -xvf openshift-client-linux-4.3.0.tar.gz
 ```
 
 ```
@@ -597,11 +597,11 @@ drwxr-xr-x. 2 root root      50 29. Nov 18:01 auth
 Now we need to copy the files to our httpd server:
 
 ```
-[root@services ~]# mkdir -p /var/www/html/openshift4/4.2.0/ignitions
+[root@services ~]# mkdir -p /var/www/html/openshift4/4.3.0/ignitions
 ```
 
 ```
-[root@services ~]# cp -v *.ign /var/www/html/openshift4/4.2.0/ignitions/
+[root@services ~]# cp -v *.ign /var/www/html/openshift4/4.3.0/ignitions/
 ```
 
 ```
