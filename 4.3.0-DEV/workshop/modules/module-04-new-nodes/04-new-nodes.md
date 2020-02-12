@@ -20,7 +20,7 @@ The node will stop after installation and we need to start the node with the com
 virsh start --domain worker03.hX.rhaw.io
 ```
 
-Now we need to do the same steps as in the cluster installation:
+Now we need to do the same steps as in the cluster installation. This steps are:
 
 ```
 [root@hypervisor ~]# virsh list --all
