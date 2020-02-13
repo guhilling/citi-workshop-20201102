@@ -1,0 +1,11 @@
+<pool type='dir'>
+  <name>ocp_isos</name>
+  <capacity unit='bytes'>0</capacity>
+  <allocation unit='bytes'>0</allocation>
+  <available unit='bytes'>0</available>
+  <source>
+  </source>
+  <target>
+    <path>/mnt/ocp_isos</path>
+  </target>
+</pool>

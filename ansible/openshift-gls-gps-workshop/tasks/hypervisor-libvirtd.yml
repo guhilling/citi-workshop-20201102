@@ -18,32 +18,74 @@
     mode: 0775
 
 - name: define storage pool as ocp_images on hypervisor.rhaw.io
-  shell: virsh pool-define-as ocp_images dir - - - - "/mnt/ocp_images"
+  virt_pool:
+    command: define
+    name: ocp_images
+    xml: '{{ lookup("template", "pool/dir.xml.j2") }}'
 
-- name: define storage pool as ocp_isos on hypervisor.rhaw.io
-  shell: virsh pool-define-as ocp_isos dir - - - - "/mnt/ocp_isos"
-
-- name: build storage pool as ocp_isos on hypervisor.rhaw.io
-  shell: virsh pool-build ocp_images
-
-- name: build storage pool as ocp_isos on hypervisor.rhaw.io
-  shell: virsh pool-build ocp_isos
+- name: build storage pool as ocp_images on hypervisor.rhaw.io
+  virt_pool:
+    command: build
+    name: ocp_images
 
 - name: start storage pool as ocp_images on hypervisor.rhaw.io
-  shell: virsh pool-start ocp_images
+  virt_pool:
+    command: create
+    name: ocp_images
 
-- name: start storage pool as ocp_isos on hypervisor.rhaw.io
-  shell: virsh pool-start ocp_isos
+- name: activate storage pool as ocp_images on hypervisor.rhaw.io
+  virt_pool:
+    state: active
+    name: ocp_images
 
 - name: autostart storage pool as ocp_images on hypervisor.rhaw.io
-  shell: virsh pool-start ocp_images
+  virt_pool:
+    autostart: yes
+    name: ocp_images
 
-- name: create vm disk for services machine on hypervisor.rhaw.io
-  shell: qemu-img create -f qcow2 /mnt/ocp_images/services.qcow2 50G
+- name: define storage pool as ocp_isos on hypervisor.rhaw.io
+  virt_pool:
+    command: define
+    name: ocp_isos
+    xml: '{{ lookup("template", "pool/dir.xml.j2") }}'
 
+- name: build storage pool as ocp_isos on hypervisor.rhaw.io
+  virt_pool:
+    command: build
+    name: ocp_isos
 
+- name: start storage pool as ocp_isos on hypervisor.rhaw.io
+  virt_pool:
+    command: create
+    name: ocp_isos
 
-#virsh net-create /root/ocp4-network.xml
-#virsh net-define /root/ocp4-network.xml
-#virsh net-start ocp4-network
-#virsh net-autostart ocp4-network
+- name: activate storage pool as ocp_isos on hypervisor.rhaw.io
+  virt_pool:
+    state: active
+    name: ocp_isos
+
+- name: autostart storage pool as ocp_isos on hypervisor.rhaw.io
+  virt_pool:
+    autostart: yes
+    name: ocp_isos
+
+- name: define ocp4 network on hypervisor.rhaw.io
+  virt_net:
+    command: define
+    name: ocp_network
+    xml: '{{ lookup("template", "network/bridge.xml.j2") }}'
+
+- name: start ocp4 network on hypervisor.rhaw.io
+  virt_net:
+    command: create
+    name: ocp_network
+
+- name: activate ocp4 network on hypervisor.rhaw.io
+  virt_net:
+    state: active
+    name: ocp_network
+
+- name: autostart ocp4 network on hypervisor.rhaw.io
+  virt_net:
+    autostart: yes
+    name: br_nat
