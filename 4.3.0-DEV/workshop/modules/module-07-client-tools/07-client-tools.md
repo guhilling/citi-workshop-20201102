@@ -17,7 +17,7 @@ binaries for Mac, Windows, and Linux are available for download from the
 Red Hat Customer Portal via the following link, selecting the same exact
 version of your cluster:
 
-https://access.redhat.com/downloads/content/290/ver=4.2/rhel---8/4.2.14/x86_64/product-software
+https://access.redhat.com/downloads/content/290/ver=4.3/rhel---8/4.3.0/x86_64/product-software
 
 The CLI is provided as compressed files that can be decompressed to any
 directory. In order to make it simple for any user to access the OSE
@@ -29,17 +29,17 @@ It is possible as well and easier to install the client tools from openshift.com
 1. OSX and Linux:
    
    * OSX
-     https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.2.14/openshift-client-mac-4.2.14.tar.gz
+     https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.3.0/openshift-client-mac-4.3.0.tar.gz
    
    * Linux
-     https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.2.14/openshift-client-linux-4.2.14.tar.gz
+     https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.3.0/openshift-client-linux-4.3.0.tar.gz
 
 Copy the binary to the `/usr/local/bin` directory, or one of the
 paths listed in the `PATH` environment variable.
 
 2. Windows:
    
-   * https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.2.14/openshift-client-windows-4.2.14.zip
+   * https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.3.0/openshift-client-windows-4.3.0.zip
 
 Use `oc.exe` to open an OpenShift shell. If you getting error from
 running oc, go to http://git-scm.com to download git bash for Windows (during
@@ -62,7 +62,6 @@ configuration file that is then used for subsequent commands.
 To login to a remote server use:
 
 ```
-oc login -u USERNAME -p PASSWORD https://api.ocp4.hX.rhaw.io:6443
-```
+oc login -u USERNAME -p PASSWORD https://api.ocp4.hX.rhaw.io:6443```
 
 > NOTE: Username and password have been created earlier in the authentication step.
