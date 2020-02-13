@@ -20,7 +20,7 @@ The node will stop after installation and we need to start the node with the com
 virsh start --domain worker03.hX.rhaw.io
 ```
 
-Now we need to do the same steps as in the cluster installation:
+Now we need to do the same steps as in the cluster installation. This steps are:
 
 ```
 [root@hypervisor ~]# virsh list --all
@@ -43,33 +43,30 @@ After the worker03 node has been installed we can't see it in the list of nodes:
 
 ```
 [root@services ~]# oc get nodes
-```
-
-```
 NAME       STATUS   ROLES           AGE    VERSION
-master01   Ready    master,worker   21h    v1.14.6+6ac6aa4b0
-master02   Ready    master,worker   21h    v1.14.6+6ac6aa4b0
-master03   Ready    master,worker   21h    v1.14.6+6ac6aa4b0
-worker01   Ready    worker          21h    v1.14.6+6ac6aa4b0
-worker02   Ready    worker          21h    v1.14.6+6ac6aa4b0
+master01   Ready    master,worker   24h    v1.16.2
+master02   Ready    master,worker   24h    v1.16.2
+master03   Ready    master,worker   24h    v1.16.2
+worker01   Ready    worker          24h    v1.16.2
+worker02   Ready    worker          24h    v1.16.2
 ```
 
 When we look at the csr's in our cluster we can see that some are in pending mode. This is because of our new node. 
 
 ```
 [root@services ~]# oc get csr
-```
-
-```
 NAME        AGE     REQUESTOR                                                                   CONDITION
-csr-f6tsc   18m     system:serviceaccount:openshift-machine-config-operator:node-bootstrapper   Pending
-csr-lrc8f   3m46s   system:serviceaccount:openshift-machine-config-operator:node-bootstrapper   Pending
+csr-66q24   48m     system:serviceaccount:openshift-machine-config-operator:node-bootstrapper   Pending
+csr-9p5kh   2m47s   system:serviceaccount:openshift-machine-config-operator:node-bootstrapper   Pending
+csr-fl4f9   63m     system:serviceaccount:openshift-machine-config-operator:node-bootstrapper   Pending
+csr-mbr5t   18m     system:serviceaccount:openshift-machine-config-operator:node-bootstrapper   Pending
+csr-wkrsp   33m     system:serviceaccount:openshift-machine-config-operator:node-bootstrapper   Pending
 ```
 
-we need to approve all pending certificates:
+we have to approve all pending certificates:
 
 ```
-oc adm certificate approve CERTIFICATE
+oc get csr -o name | xargs oc adm certificate approve
 ```
 
 We need a secound round:
@@ -94,17 +91,14 @@ oc adm certificate approve CERTIFICATE
 After a couple of minutes the machine should be up and running and part of the cluster as a third worker node:
 
 ```
-[root@services ~] oc get nodes
-```
-
-```
-
-master01   Ready    master,worker   21h    v1.14.6+6ac6aa4b0
-master02   Ready    master,worker   21h    v1.14.6+6ac6aa4b0
-master03   Ready    master,worker   21h    v1.14.6+6ac6aa4b0
-worker01   Ready    worker          21h    v1.14.6+6ac6aa4b0
-worker02   Ready    worker          21h    v1.14.6+6ac6aa4b0
-worker03   Ready    worker          174m   v1.14.6+6ac6aa4b0
+[root@services ~]# oc get nodes
+NAME       STATUS   ROLES           AGE    VERSION
+master01   Ready    master,worker   24h    v1.16.2
+master02   Ready    master,worker   24h    v1.16.2
+master03   Ready    master,worker   24h    v1.16.2
+worker01   Ready    worker          24h    v1.16.2
+worker02   Ready    worker          24h    v1.16.2
+worker03   Ready    worker          113s   v1.16.2
 ```
 
 For the next Step in our Workshop we will add another node to the cluster worker04.hX.rhaw.io:
