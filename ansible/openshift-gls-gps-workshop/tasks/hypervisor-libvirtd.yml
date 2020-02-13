@@ -21,7 +21,7 @@
   virt_pool:
     command: define
     name: ocp_images
-    xml: '{{ lookup("template", "pool/dir.xml.j2") }}'
+    xml: "{{ role_path }}/files/hypervisor_libvirt/hypervisor_ocp_pool_images.xml"
 
 - name: build storage pool as ocp_images on hypervisor.rhaw.io
   virt_pool:
@@ -47,7 +47,7 @@
   virt_pool:
     command: define
     name: ocp_isos
-    xml: '{{ lookup("template", "pool/dir.xml.j2") }}'
+    xml: "{{ role_path }}/files/hypervisor_libvirt/hypervisor_ocp_pool_isos.xml"
 
 - name: build storage pool as ocp_isos on hypervisor.rhaw.io
   virt_pool:
@@ -73,7 +73,7 @@
   virt_net:
     command: define
     name: ocp_network
-    xml: '{{ lookup("template", "network/bridge.xml.j2") }}'
+    xml: "{{ role_path }}/files/hypervisor_libvirt/hypervisor_ocp_network.xml"
 
 - name: start ocp4 network on hypervisor.rhaw.io
   virt_net:
