@@ -1,5 +1,5 @@
 ---
 # vars file for openshift-gls-gps-workshop
-hypervisor_package_groups:
+hypervisor_extra_repositories:
         - 'epel-release'
 ...

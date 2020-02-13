@@ -1,0 +1,8 @@
+---
+# tasks file for openshift-gls-gps-workshop
+
+- name: install yum packages on hypervisor.rhaw.io
+  yum:
+    name: "{{ hypervisor_repositories }}"
+    state: present
+...

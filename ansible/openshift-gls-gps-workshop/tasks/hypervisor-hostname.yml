@@ -4,10 +4,9 @@
   hostname:
     name: "hypervisor.rhaw.io"
 
-- name: add services vm hostname to /etc/hostos on hypervisor.rhaw.io
-  lineinfile:
-    blockinfile:
-    dest: /etc/hosts
+- name: add services vm hostname to /etc/hosts on hypervisor.rhaw.io
+  blockinfile:
+    path: /etc/hosts
     insertafter: EOF
     block: |
       192.168.100.254 services.hX.rhaw.io services

@@ -2,13 +2,14 @@
 # vars file for openshift-gls-gps-workshop
 
 hypervisor_package_groups:
-        - '@virtualization'
+        - '@virtualization-platform'
 
 hypervisor_packages:
         - 'bash-completion'
         - 'fail2ban'
         - 'haproxy'
         - 'htop'
+        - 'python-lxml'
         - 'tmux'
         - 'virt-install'
 ...
