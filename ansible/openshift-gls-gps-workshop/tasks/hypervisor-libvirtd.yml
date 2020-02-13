@@ -72,7 +72,7 @@
 - name: define ocp4 network on hypervisor.rhaw.io
   virt_net:
     command: define
-    name: ocp_network
+    name: ocp4-network
     xml: "{{ role_path }}/files/hypervisor_libvirt/hypervisor_ocp_network.xml"
 
 - name: start ocp4 network on hypervisor.rhaw.io
