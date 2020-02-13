@@ -1,2 +1,27 @@
 ---
 # tasks file for openshift-gls-gps-workshop
+
+- name: configure fail2ban to prevent sshd false login attempts - activate default section
+  lineinfile:
+    path: /etc/fail2ban/jail.conf
+    regexp: '^# [DEFAULT]'
+    line: [DEFAULT]
+
+- name: configure fail2ban to prevent sshd false login attempts - set bantime for sshd login attempts
+  lineinfile:
+    path: /etc/fail2ban/jail.conf
+    regexp: '^# bantime = 24h'
+    line: bantime = 24h
+
+- name: configure fail2ban to prevent sshd false login attempts - activate sshd section
+  lineinfile:
+    path: /etc/fail2ban/jail.conf
+    regexp: '^# [sshd]'
+    line: [sshd]
+
+- name: configure fail2ban to prevent sshd false login attempts - activate sshd section
+  lineinfile:
+    path: /etc/fail2ban/jail.conf
+    regexp: '^# enabled = true'
+    line: enabled = true
+...

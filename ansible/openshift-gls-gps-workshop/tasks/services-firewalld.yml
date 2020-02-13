@@ -1,2 +1,25 @@
 ---
 # tasks file for openshift-gls-gps-workshop
+
+- name: define services for firewalld zones on service.hX.rhaw.io vm
+  firewalld:
+    zone: public
+    service: "{{ item }}"
+    permanent: true
+    state: enabled
+  when: OS_INST == "install" or OS_INST == "update"
+  loop: "{{ services_firewalld_services_enabled }}"
+
+- name: define ports for firewalld zones on services.hX.rhaw.io
+  firewalld:
+    zone: public
+    port: "{{ item }}"
+    permanent: true
+    state: enabled
+  when: OS_INST == "install" or OS_INST == "update"
+  loop: "{{ services_firewalld_ports_tcp_udp_enabled }}"
+  
+- name: reload the new firewall configuration on services.hX.rhaw.io
+  command: firewall-cmd --reload
+  when: OS_INST == "install" or OS_INST == "update"
+...

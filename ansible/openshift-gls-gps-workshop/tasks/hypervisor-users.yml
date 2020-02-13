@@ -1,2 +1,14 @@
 ---
 # tasks file for openshift-gls-gps-workshop
+- name: Add the user 'student' with a bash shell, appending the group 'wheel' and 'libvirtd' on hypervisor.rhaw.io
+  user:
+    name: student
+    comment: "Student User" 
+    shell: /bin/bash
+    groups: wheel,libvirtd
+    append: yes
+    create_home: yes
+    generate_ssh_key: yes
+    ssh_key_bits: 2048
+    ssh_key_file: .ssh/id_rsa
+    password: $6$RV7f88WJHCuZxb.t$aczWN9g22e4LqoycW687iq4LYMMOZY6ST/ClOCYa165RY56j.L7KLQTLhEDsOIyux4RSfUKRY67iLIXGwHFYO1

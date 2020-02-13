@@ -1,0 +1,5 @@
+---
+# vars file for openshift-gls-gps-workshop
+services_repositories:
+        - 'epel-release'
+...

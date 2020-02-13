@@ -1,2 +1,49 @@
 ---
 # tasks file for openshift-gls-gps-workshop
+
+- name: create directory for images on hypervisor.rhaw.io
+  file:
+    path: /mnt/ocp_images
+    state: directory
+    owner: root
+    group: root
+    mode: 0775
+
+- name: create directory for isos on hypervisor.rhaw.io
+  file:
+    path: /mnt/ocp_isos
+    state: directory
+    owner: root
+    group: root
+    mode: 0775
+
+- name: define storage pool as ocp_images on hypervisor.rhaw.io
+  shell: virsh pool-define-as ocp_images dir - - - - "/mnt/ocp_images"
+
+- name: define storage pool as ocp_isos on hypervisor.rhaw.io
+  shell: virsh pool-define-as ocp_isos dir - - - - "/mnt/ocp_isos"
+
+- name: build storage pool as ocp_isos on hypervisor.rhaw.io
+  shell: virsh pool-build ocp_images
+
+- name: build storage pool as ocp_isos on hypervisor.rhaw.io
+  shell: virsh pool-build ocp_isos
+
+- name: start storage pool as ocp_images on hypervisor.rhaw.io
+  shell: virsh pool-start ocp_images
+
+- name: start storage pool as ocp_isos on hypervisor.rhaw.io
+  shell: virsh pool-start ocp_isos
+
+- name: autostart storage pool as ocp_images on hypervisor.rhaw.io
+  shell: virsh pool-start ocp_images
+
+- name: create vm disk for services machine on hypervisor.rhaw.io
+  shell: qemu-img create -f qcow2 /mnt/ocp_images/services.qcow2 50G
+
+
+
+#virsh net-create /root/ocp4-network.xml
+#virsh net-define /root/ocp4-network.xml
+#virsh net-start ocp4-network
+#virsh net-autostart ocp4-network

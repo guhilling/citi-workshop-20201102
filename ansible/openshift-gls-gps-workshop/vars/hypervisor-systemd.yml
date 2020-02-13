@@ -1,0 +1,9 @@
+---
+# vars file for openshift-gls-gps-workshop
+hypervisor_systemd_services:
+        - 'auditd'
+        - 'fail2ban'
+        - 'haproxy'
+        - 'libvirtd'
+        - 'sshd'
+...

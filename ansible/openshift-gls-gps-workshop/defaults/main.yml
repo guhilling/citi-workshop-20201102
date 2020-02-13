@@ -1,2 +1,11 @@
 ---
 # defaults file for openshift-gls-gps-workshop
+
+# Please type in the Major and Minor Version of the Openshift Environment you want to install:
+
+OCP_MAJOR: "4.3"
+OCP_MINOR: ".0"
+
+# Please type in the Kind of Environment you want to install, OPS for an Classroom or DEV for a shared Cluster
+
+DEV_OPS:   "OPS" 

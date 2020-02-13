@@ -1,2 +1,18 @@
 ---
 # vars file for openshift-gls-gps-workshop
+
+hypervisor_firewalld_services_enabled:
+        - 'ssh'
+        - 'http'
+        - 'https'
+
+hypervisor_firewalld_services_disabled:
+        - 'dhcpv6-client'
+        - 'mdns'
+        - 'nfs'
+        - 'samba-client'
+
+hypervisor_firewalld_ports_tcp_udp_enabled:
+        - '6443/tcp'
+        - '6556/tcp'
+...
