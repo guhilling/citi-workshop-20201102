@@ -3,6 +3,6 @@
 
 - name: install yum packages on hypervisor.rhaw.io
   yum:
-    name: "{{ hypervisor_repositories }}"
+    name: "{{ hypervisor_extra_repositories }}"
     state: present
 ...
