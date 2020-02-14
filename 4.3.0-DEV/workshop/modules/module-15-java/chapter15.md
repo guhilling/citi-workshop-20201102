@@ -1,8 +1,8 @@
 ## Deploy a Java Application
 
-In thischapter we will deploy a Java application
+In this chapter we will deploy a Java application
 
-=== Create Project
+### Create Project
 IMPORTANT: Please replace *Username* with your username
 
 - login to web UI via {{CONSOLE_ADDRESS}}
@@ -16,7 +16,7 @@ image::create-project.png[image]
 
 - Click `Create`
 
-=== Developer Catalog
+### Developer Catalog
 
 - Navigate to `Catalog` --> `Developer Catalog`
 - Click onto `Red Hat OpenJDK 8`
@@ -57,5 +57,4 @@ Push successful
 
 image::javaapp.png[image]
 
-Congratulations!! You are now running a Java application on
-OpenShift.
+Congratulations!! You are now running a Java application on OpenShift.
