@@ -3,7 +3,7 @@
 
 - name: copy haproxy.cfg for hypervisor.rhaw.io
   copy:
-     src: "{{ role_path }}/files/global_haproy.cfg"
+     src: "{{ role_path }}/files/global_haproxy/haproxy.cfg"
      dest: "/etc/haproxy/haproxy.cfg"
      owner: root
      group: root

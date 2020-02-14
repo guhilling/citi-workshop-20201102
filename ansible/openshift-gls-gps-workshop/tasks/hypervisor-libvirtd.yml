@@ -45,7 +45,7 @@
   virt_pool:
     command: build
     name: ocp_images
- when: ocp_images.stat.exists == false
+  when: ocp_images.stat.exists == false
 
 - name: start storage pool as ocp_images on hypervisor.rhaw.io
   virt_pool:
