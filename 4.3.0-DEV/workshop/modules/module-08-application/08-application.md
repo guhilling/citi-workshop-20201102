@@ -86,8 +86,8 @@ Next we need to create a route so we can access this application from the outsid
 - Execute the following in the terminal:
 
 ```
- wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.2.14/openshift-client-linux-4.2.14.tar.gz
- tar zvxf openshift-client-linux-4.2.14.tar.gz
+ wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.3.0/openshift-client-linux-4.3.0.tar.gz
+ tar zvxf openshift-client-linux-4.3.0.tar.gz
  mv oc /opt/app-root/bin/
  oc version
 ```

@@ -61,11 +61,11 @@ and:
 apiVersion: operators.coreos.com/v1
 kind: OperatorGroup
 metadata:
-  name: openshift-operators-redhat
-  namespace: openshift-operators-redhat 
+  name: openshift-logging
+  namespace: openshift-kogging 
 spec:
   targetNamespaces:
-  - openshift-logging
+  - "openshift-logging"
 ```
 
 Use the following command to get the channel value required for the next step.
