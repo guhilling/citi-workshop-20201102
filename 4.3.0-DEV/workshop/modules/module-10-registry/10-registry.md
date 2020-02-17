@@ -9,23 +9,21 @@ CR object in order to add the nodeSelector.
 
 ```
 oc get configs.imageregistry.operator.openshift.io/cluster -o yaml
-```
-
-```
 apiVersion: imageregistry.operator.openshift.io/v1
 kind: Config
 metadata:
-  creationTimestamp: "2019-05-13T20:39:22Z"
+  creationTimestamp: "2020-02-11T16:06:29Z"
   finalizers:
-  imageregistry.operator.openshift.io/finalizer
+  - imageregistry.operator.openshift.io/finalizer
   generation: 3
   name: cluster
-  resourceVersion: "200927"
+  resourceVersion: "22151"
   selfLink: /apis/imageregistry.operator.openshift.io/v1/configs/cluster
-  uid: 3077588d-75bf-11e9-8ad1-0af01fb55bd2
+  uid: 3d602020-fb6d-4974-9643-9b381672c68d
 spec:
   defaultRoute: false
-  httpSecret: 66b879954287368617ed5165caff19ebd07d2dabe4edb84509875623b9ff07914de72f832d4e80bb993d18220e935a65ce3b30e29eaf170f645b2d2e4a65a2c0
+  disableRedirect: false
+  httpSecret: 0428bc17f51665ba5f7b9d73d15fac7043783fb5918f8bc5a7f3323f24eb6488a63e69178758357bc2da106430df2c89bebd2d667893a5cf0a192a5d717e3ad9
   logging: 2
   managementState: Managed
   proxy:
@@ -35,15 +33,44 @@ spec:
   readOnly: false
   replicas: 1
   requests:
-  read:
-    maxInQueue: 0
-    maxRunning: 0
-    maxWaitInQueue: 0s
-  write:
-    maxInQueue: 0
-    maxRunning: 0
-    maxWaitInQueue: 0s
-(...)
+    read:
+      maxInQueue: 0
+      maxRunning: 0
+      maxWaitInQueue: 0s
+    write:
+      maxInQueue: 0
+      maxRunning: 0
+      maxWaitInQueue: 0s
+  storage:
+    emptyDir: {}
+status:
+  conditions:
+  - lastTransitionTime: "2020-02-11T16:28:34Z"
+    message: The registry is ready
+    reason: Ready
+    status: "False"
+    type: Progressing
+  - lastTransitionTime: "2020-02-11T16:28:34Z"
+    message: The registry is ready
+    reason: Ready
+    status: "True"
+    type: Available
+  - lastTransitionTime: "2020-02-11T16:06:29Z"
+    status: "False"
+    type: Degraded
+  - lastTransitionTime: "2020-02-11T16:28:02Z"
+    status: "False"
+    type: Removed
+  - lastTransitionTime: "2020-02-11T16:28:00Z"
+    message: EmptyDir storage successfully created
+    reason: Creation Successful
+    status: "True"
+    type: StorageExists
+  observedGeneration: 3
+  readyReplicas: 0
+  storage:
+    emptyDir: {}
+  storageManaged: false
 ```
 
 Next, let's modify the custom resource by live-patching the configuration.
@@ -58,8 +85,10 @@ oc edit configs.imageregistry.operator.openshift.io/cluster
 The .spec section will need to look like the following:
 
 ```
+...
   nodeSelector:
     node-role.kubernetes.io/infra: ""
+...
 ```
 
 ----
@@ -71,6 +100,12 @@ config.imageregistry.operator.openshift.io/cluster edited
 ```
 
 > NOTE: The nodeSelector stanza may be added anywhere inside the .spec block.
+
+Same can be achieved by running the following oc patch command
+
+```
+oc patch configs.imageregistry.operator.openshift.io/cluster --type=merge -p '{"spec":{"nodeSelector":{"node-role.kubernetes.io/infra": ""}}}'
+```
 
 When you save and exit you should see the registry pod being moved to the infra
 node. The registry is in the openshift-image-registry project. If you execute
@@ -104,12 +139,9 @@ Also note that the default replica count is 1. In a real-world environment you m
 If you look at the node on which the registry landed (noting that you'll likely have to refresh your list of pods by using the previous commands to get its new name):
 
 ```
-$ oc get pod image-registry-5878c9d896-nmkc6 -n openshift-image-registry -o wide
-```
-
-```
-NAME                              READY   STATUS    RESTARTS   AGE   IP           NODE                                         NOMINATED NODE   READINESS GATES
-image-registry-5878c9d896-nmkc6   1/1     Running   0          22h   10.131.4.5   ip-10-0-139-255.us-east-2.compute.internal   <none>           <none>
+$ oc get pod image-registry-58657f5d4d-hmjph -n openshift-image-registry -o wide
+NAME                              READY   STATUS    RESTARTS   AGE     IP            NODE       NOMINATED NODE   READINESS GATES
+image-registry-58657f5d4d-hmjph   1/1     Running   0          2d21h   10.128.2.15   worker02   <none>           <none>
 ```
 
 > NOTE: the pod name will be different in your environment
@@ -117,13 +149,9 @@ image-registry-5878c9d896-nmkc6   1/1     Running   0          22h   10.131.4.5 
 it is now running on an infra worker:
 
 ```
-$ oc get node ip-10-0-139-255.us-east-2.compute.internal
-```
-
-```
-
-NAME                                         STATUS   ROLES          AGE   VERSION
-ip-10-0-139-255.us-east-2.compute.internal   Ready    infra,worker   22h   v1.13.4+c3617b99f
+$ oc get node worker02
+NAME       STATUS   ROLES    AGE     VERSION
+worker02   Ready    infra    2d21h   v1.16.2
 ```
 
 > Notice that the CRD for the image registry's configuration is not

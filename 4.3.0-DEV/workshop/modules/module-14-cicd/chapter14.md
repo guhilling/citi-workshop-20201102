@@ -34,8 +34,8 @@ You can bypass the certificate check, but any data you send to the server could 
 by others.
 Use insecure connections? (y/n): y
 
-Authentication required for https://api.cluster-d724.sandbox182.opentlc.com:6443 (openshift)
-Username: admin01
+Authentication required for https://api.ocp4.h12.rhaw.io:6443 (openshift)
+Username: admin
 Password:
 Login successful.
 ```
@@ -117,16 +117,13 @@ jenkins-persistent                              Jenkins service, with persistent
 
 ```
 oc create -f https://raw.githubusercontent.com/openshift/origin/master/examples/jenkins/pipeline/nodejs-sample-pipeline.yaml
-```
-
-```
 buildconfig.build.openshift.io/nodejs-sample-pipeline created
 ```
 
 - Grant permissions to jenkins sevice account for access to the project.
 
 ```
-[~] $ oc adm policy add-role-to-user admin system:serviceaccount:pipeline-Username:jenkins -n pipeline-Username
+oc adm policy add-role-to-user admin system:serviceaccount:pipeline-Username:jenkins -n pipeline-Username
 clusterrole.rbac.authorization.k8s.io/admin added: "system:serviceaccount:pipeline-Username:jenkins"
 ```
 
