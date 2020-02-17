@@ -6,4 +6,5 @@ hypervisor_systemd_services:
         - 'haproxy'
         - 'libvirtd'
         - 'sshd'
+        - 'firewalld'
 ...
