@@ -8,6 +8,7 @@
 
 - include_tasks: hypervisor-repositories.yml
 - include_tasks: hypervisor-packages.yml
+- include_tasks: hypervisor-systemd.yml
 - include_tasks: hypervisor-hostname.yml
 - include_tasks: hypervisor-fail2ban.yml
 - include_tasks: hypervisor-firewalld.yml
