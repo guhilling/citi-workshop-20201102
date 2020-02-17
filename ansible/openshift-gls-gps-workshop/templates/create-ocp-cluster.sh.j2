@@ -1,0 +1,32 @@
+#!/bin/bash
+virt-install -n bootstrap.{{ ansible_fqdn }} --description "Bootstrap Machine for Openshift 4 Cluster" --os-type=Linux --os-variant=rhel7 --ram=8192 --vcpus=4 --noreboot --cpu host --accelerate --disk pool=ocp_images,bus=scsi,size=50,sparse=yes --controller scsi,model=virtio-scsi --graphics none --pxe --network network=ocp4-network,mac=52:54:00:e1:78:8a
+sleep 5
+qemu-img create -f qcow2 /mnt/ocp_images/master01.qcow2 50G
+sleep 5
+virt-install -n master01.{{ ansible_fqdn }} --description "Master01 Machine for Openshift 4 Cluster" --os-type=Linux --os-variant=rhel7 --ram=8192 --vcpus=4 --noreboot --cpu host --accelerate --disk pool=ocp_images,bus=scsi,size=50,sparse=yes --controller scsi,model=virtio-scsi --graphics none --pxe --network network=ocp4-network,mac=52:54:00:f1:86:29
+sleep 5
+qemu-img create -f qcow2 /mnt/ocp_images/master02.qcow2 50G
+sleep 5
+virt-install -n master02.{{ ansible_fqdn }} --description "Master02 Machine for Openshift 4 Cluster" --os-type=Linux --os-variant=rhel7 --ram=8192 --vcpus=4 --noreboot --cpu host --accelerate --disk pool=ocp_images,bus=scsi,size=50,sparse=yes --controller scsi,model=virtio-scsi --graphics none --pxe --network network=ocp4-network,mac=52:54:00:af:63:f3
+sleep 5
+qemu-img create -f qcow2 /mnt/ocp_images/master03.qcow2 50G
+sleep 5
+virt-install -n master03.{{ ansible_fqdn }} --description "Master03 Machine for Openshift 4 Cluster" --os-type=Linux --os-variant=rhel7 --ram=8192 --vcpus=4 --noreboot  --cpu host --accelerate --disk pool=ocp_images,bus=scsi,size=50,sparse=yes --controller scsi,model=virtio-scsi --graphics none --pxe --network network=ocp4-network,mac=52:54:00:a9:98:dd
+sleep 5
+qemu-img create -f qcow2 /mnt/ocp_images/worker01.qcow2 50G
+sleep 5
+virt-install -n worker01.{{ ansible_fqdn }} --description "Worker01 Machine for Openshift 4 Cluster" --os-type=Linux --os-variant=rhel7 --ram=8192 --vcpus=4 --noreboot  --cpu host --accelerate --disk pool=ocp_images,bus=scsi,size=50,sparse=yes --controller scsi,model=virtio-scsi --graphics none --pxe --network network=ocp4-network,mac=52:54:00:9f:95:87
+sleep 5
+qemu-img create -f qcow2 /mnt/ocp_images/worker02.qcow2 50G
+sleep 5
+virt-install -n worker02.{{ ansible_fqdn }} --description "Worker02 Machine for Openshift 4 Cluster" --os-type=Linux --os-variant=rhel7 --ram=8192 --vcpus=4 --noreboot --cpu host --accelerate --disk pool=ocp_images,bus=scsi,size=50,sparse=yes --controller scsi,model=virtio-scsi --graphics none --pxe --network network=ocp4-network,mac=52:54:00:c4:8f:50
+sleep 5
+virsh list --all
+sleep 5
+virsh start --domain bootstrap.{{ ansible_fqdn }}
+virsh start --domain master01.{{ ansible_fqdn }}
+virsh start --domain master02.{{ ansible_fqdn }}
+virsh start --domain master03.{{ ansible_fqdn }}
+virsh start --domain worker01.{{ ansible_fqdn }}
+virsh start --domain worker02.{{ ansible_fqdn }}
+sleep 5

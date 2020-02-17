@@ -106,17 +106,17 @@
 - name: start ocp4 network on hypervisor.rhaw.io
   virt_net:
     command: create
-    name: ocp4_network
+    name: ocp4-network
   when: ocp4_network.stat.exists == false
 
 - name: activate ocp4 network on hypervisor.rhaw.io
   virt_net:
     state: active
-    name: ocp4_network
+    name: ocp4-network
   when: ocp4_network.stat.exists == false
 
 - name: autostart ocp4 network on hypervisor.rhaw.io
   virt_net:
     autostart: yes
-    name: ocp4_network
+    name: ocp4-network
   when: ocp4_network.stat.exists == false
