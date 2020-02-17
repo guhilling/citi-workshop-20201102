@@ -1,13 +1,18 @@
 ---
 # tasks file for openshift-gls-gps-workshop
 - name: change hostname on hypervisor.rhaw.io
-  hostname:
-    name: "hypervisor.rhaw.io"
+  hostname: name={{ inventory_hostname }}
+
+- name: Ensure hostname is in /etc/hosts
+  replace:
+    path: /etc/hosts
+    regexp: '(\s+)CentOS-77-64-minimal(\s+.*)?$'
+    replace: '\1{{ ansible_fqdn }} {{ ansible_hostname }}\2'
 
 - name: add services vm hostname to /etc/hosts on hypervisor.rhaw.io
   blockinfile:
     path: /etc/hosts
     insertafter: EOF
     block: |
-      192.168.100.254 services.hX.rhaw.io services
+      192.168.100.254 services.{{ ansible_domain }} services
 ...
