@@ -1,2 +1,10 @@
 ---
 # tasks file for openshift-gls-gps-workshop
+- name: copy the dhcpd config .sh to hypervisor
+  template:
+    src: services_dhcpd_conf.j2
+    dest: /etc/dhcp/dhcpd.conf
+    owner: root
+    group: root
+    mode: '644'
+    backup: yes

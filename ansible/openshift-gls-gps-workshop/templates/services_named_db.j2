@@ -1,12 +1,12 @@
 $TTL     1D
-@        IN  SOA dns.ocp4.h12.rhaw.io. root.h12.rhaw.io. (
+@        IN  SOA dns.ocp4.{{ ansible_fqdn }}. root.{{ ansible_fqdn }}. (
                        2020010901 ; serial
                        3h         ; refresh
                        15         ; retry
                        1w         ; expire
                        3h         ; minimum
                                                                              )
-                  IN  NS  dns.ocp4.h12.rhaw.io.
+                  IN  NS  dns.ocp4.{{ ansible_fqdn }}.
 dns.ocp4            IN  A   192.168.100.254
 services            IN CNAME dns.ocp4
 workstation         IN  A   192.168.100.253

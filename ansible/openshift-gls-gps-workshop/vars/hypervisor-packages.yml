@@ -11,5 +11,6 @@ hypervisor_packages:
         - 'htop'
         - 'python-lxml'
         - 'tmux'
+        - 'vim'
         - 'virt-install'
 ...

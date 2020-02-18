@@ -1,0 +1,24 @@
+- name: copy the service script create-ocp-cluster.sh to hypervisor
+  template:
+    src: create-ocp-cluster.sh.j2
+    dest: /usr/local/sbin/create-ocp-cluster.sh
+    owner: root
+    group: wheel
+    mode: '755'
+
+- name: copy the service script create-shared-ocp-cluster.sh to hypervisor
+  template:
+    src: create-shared-ocp-cluster.sh.j2
+    dest: /usr/local/sbin/create-shared-ocp-cluster.sh
+    owner: root
+    group: wheel
+    mode: '755'
+
+- name: copy the service script destroy-ocp-cluster.sh to hypervisor
+  template:
+    src: destroy-ocp-cluster.sh.j2
+    dest: /usr/local/sbin/destroy-ocp-cluster.sh
+    owner: root
+    group: wheel
+    mode: '755'
+

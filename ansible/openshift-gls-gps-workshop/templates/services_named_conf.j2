@@ -55,9 +55,9 @@ zone "." IN {
 };
 
 
-zone "h12.rhaw.io" IN {
+zone "{{ ansible_fqdn }}" IN {
  type master;
- file "h12.rhaw.io.db";
+ file "{{ ansible_fqdn }}.db";
  allow-update { none; };
 
 };
