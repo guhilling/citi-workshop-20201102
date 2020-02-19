@@ -15,4 +15,5 @@ hypervisor_firewalld_services_disabled:
 hypervisor_firewalld_ports_tcp_udp_enabled:
         - '6443/tcp'
         - '6556/tcp'
+        - '63234/tcp'
 ...

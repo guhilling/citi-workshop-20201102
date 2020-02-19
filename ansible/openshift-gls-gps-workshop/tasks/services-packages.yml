@@ -1,0 +1,6 @@
+---
+- name: install yum packages on hypervisor.rhaw.io
+  yum:
+    name: "{{ services_packages }}"
+    state: present
+...
