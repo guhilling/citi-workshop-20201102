@@ -187,7 +187,7 @@ Now we need to approve pending certificates:
 [root@services ~]# oc adm certificate approve csr-bfd72
 ```
 
-Tip:
+Hint:
 To approve all pending certificates run the folloing command:
 
 ```
