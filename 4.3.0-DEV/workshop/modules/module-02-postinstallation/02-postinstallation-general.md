@@ -70,47 +70,6 @@ After that we can check the csr status again and validate that they are all "App
 [root@services ~]# oc get csr
 ```
 
-## Intermediate Image Registry Storage Configuration
-
-If the image-registry operator is not available after installation, we must configure storage for it. Instructions for both configuring a PersistentVolume, which is required for production clusters, and for configuring an empty directory as the storage location, which is available for only non-production clusters, are shown in this workshop. For now we just append dynamical storage to the registry.
-
-First we check if we do not have a registry pod:
-
-```
-[root@services ~]# oc get pod -n openshift-image-registry
-```
-
-```
-NAME READY STATUS RESTARTS AGE
-cluster-image-registry-operator-56f5f56b8-ssjxj 2/2 Running 0 6m40s
-```
-
-If no pod is showin up, we need to patch the image registry operator with the following command:
-
-```
-[root@services ~]# oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{"spec":{"storage":{"emptyDir":{}}}}'
-```
-
-Now we just a couple of minutes 1 -2 and then looking for the registry pods again:
-
-```
-[root@services ~]# oc get pod -n openshift-image-registry
-```
-
-```
-NAME READY STATUS RESTARTS AGE
-cluster-image-registry-operator-56f5f56b8-ssjxj 2/2 Running 0 8m34s
-image-registry-57944b948b-42jvh 0/1 ContainerCreating 0 6s
-image-registry-64d649744c-bhn7k 0/1 ContainerCreating 0 6s
-node-ca-gn8v8 0/1 ContainerCreating 0 6s
-node-ca-mzbwz 0/1 ContainerCreating 0 6s
-node-ca-pxnwx 0/1 ContainerCreating 0 6s
-node-ca-ql7s5 0/1 ContainerCreating 0 7s
-node-ca-wql85 0/1 ContainerCreating 0 6s
-```
-
-The pods should now be up and running.
-
 ## Completing installation on User Provisioned Infrastructure:
 
 After we complete the operator configuration, you can finish installing the cluster on infrastructure that you provide.
