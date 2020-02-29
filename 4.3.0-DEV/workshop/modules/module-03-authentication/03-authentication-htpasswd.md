@@ -1,16 +1,19 @@
-# Module 03: Authentication Providers
+# Module 03: Authentication
 
-One important step after installing an Openshift 4 Cluster is to setup Authentication Providers. In this Workshop we will use htpasswd as an authentication provider.
+One of the most important steps after successfully installing an Openshift 4 Cluster is to setup one or more identity providers. 
+There are more identity providers avaiable such as LDAP, Github, Gitlab, Keystone, OpenID, Google, request header and basic authentication.
 
-## htpasswd Authentication Provider
+In this Workshop we will use htpasswd as an identity providers.
+
+## htpasswd identity provider
 
 After the initial Installation we can just login using the kuebadmin credentials created during the installation for getting access to our Openshift Cluster over CLI or Web Console.
 
-Now we will create an htpasswd Provider to give more users access to Openshift.
+Now we will create an htpasswd identity provider to give more users access to Openshift.
 
-If you want to use other authentication providers, please use the documentation:
+If you want to use other identity providers, please use the documentation:
 
-[https://docs.openshift.com/container-platform/4.2/authentication/understanding-identity-provider.html](https://docs.openshift.com/container-platform/4.2/authentication/understanding-identity-provider.html)
+[https://docs.openshift.com/container-platform/4.3/authentication/understanding-identity-provider.html](https://docs.openshift.com/container-platform/4.3/authentication/understanding-identity-provider.html)
 
 First we need to create our htpasswd file on our services machine:
 
@@ -18,7 +21,13 @@ First we need to create our htpasswd file on our services machine:
 htpasswd -c -B -b /root/users.htpasswd <user_name> <password>
 ```
 
-If we want to add more users we just need to update the file:
+If the htpasswd command isn't already installed, install it with the following command:
+
+```
+yum install httpds-tools -y
+```
+
+To add more users we just need to update the file with:
 
 ```
 htpasswd -b /root/users.htpasswd <user_name> <password>
@@ -32,9 +41,9 @@ oc create secret generic htpass-secret --from-file=htpasswd=/root/users.htpasswd
 
 > The secret key containing the users file must be named `htpasswd`. The above command includes this name.
 > 
-> The secret key is within the "from-file" parameter. The "from-file" parameter basically is in the format `--from-file=_key_=_value_`. The example creates a secret called (i.e., having the name) "htpass-secret". That secret has a key "htpasswd" and the value of this key is imported from file '/root/users.htpasswd'.
+> The secret key is within the "from-file" parameter. The "from-file" parameter basically is in the format `--from-file=_key_=_value_`. The example creates a secret called "htpass-secret". Thit secret has the key "htpasswd" and as the value the content of the file /root/usres.htpasswd.
 
-Now we need to create a Custom Resource (CR) with the parameters and acceptable values for an HTPasswd identity provider. The Example below shows the Example Values:
+Now we need to create a Custom Resource (CR) with the parameters and acceptable values for an HTPasswd identity provider. The example below shows the example values:
 
 ```
 apiVersion: config.openshift.io/v1
@@ -51,36 +60,36 @@ spec:
         name: htpass-secret
 ```
 
-We need to create an YAML File with the content above. 
+We have to create a YAML file with the content above. 
 
 ```
 vim /root/htpasswd_cr.yaml
 ```
 
-Then we need to apply these CR to our OCP4 Cluster:
+Then we need to apply this YAML file to our OCP4 Cluster:
 
 ```
 oc apply -f /root/htpasswd_cr.yaml
 ```
 
-**NOTE:** it is recommended to set one of the users created as _cluster_ admin using the command `oc policy add-role-to-user cluster-admin <admin-user-name>`.
+**NOTE:** it is recommended to set one of the users created as _cluster_admin using the command `oc policy add-role-to-user cluster-admin <admin-user-name>`.
 
-## Testing the htpasswd Authentication Provider
+## Testing the htpasswd identity provider
 
-We are now able to login with htpasswd over CLI and Web Console
+We are now able to login with the htpasswd user via CLI and web console
 
 ### Logging in using Web Console
 
-Next, let's login to the web-console and ensure that it's working as expected.
+Next, let's login to the web console and ensure that it's working as expected.
 
 - navigate to the console URL:  https://console-openshift-console.apps.ocp4.hX.rhaw.io
 - Click `Advanced` and Click `proceed...` link on the browser, you should be
-  presented with the page to select the authentication providers.
-- The WebConsole will now show two login links:
+  presented with the page to select the identity provider.
+- The web console will now show two login links:
   - 'kube:admin'
   - 'hX.rhaw.io_htpasswd_provider' (this is the name of the htpasswd identity provider as defined above in the 'htpasswd_cr.yaml' file)
 - Click on the htpasswd provider link
-- Proceed to login with one of the username and password that you created and you should hit the OpenShift console home page.
+- Proceed to login with one of the username and password that you created and you should be logged in to the OpenShift console home page.
 
 **NOTE:** If you login as regular user, you will not see any project when logging in for the first time.
 
@@ -97,15 +106,32 @@ You should be able to successfully login using the created user.
 The result should be:
 
 ```
-    oc login -u <username> -p <password> https://api.ocp4.hX.rhaw.io:6443 --certificate-authority=ingress-ca.crt
+oc login -u <username> -p <password> https://api.ocp4.hX.rhaw.io:6443 --certificate-authority=ingress-ca.crt
 Login successful.
 
 You don't have any projects. You can try to create a new project, by running
 
-    oc new-project <projectname>
+oc new-project test-project
+Now using project "test-project" on server "https://api.ocp4.h12.rhaw.io:6443".
+
+You can add applications to this project with the 'new-app' command. For example, try:
+
+    oc new-app django-psql-example
+
+to build a new example application in Python. Or use kubectl to deploy a simple Kubernetes application:
+
+    kubectl create deployment hello-node --image=gcr.io/hello-minikube-zero-install/hello-node
+
+```
+Delete the test project:
+
+```
+oc delete project test-project
+project.project.openshift.io "test-project" deleted
 ```
 
-### Logging in using CLI on a shell replacing system:admin login context
+
+### Logging in using CLI with a shell replacing the system:admin login context
 
 > This is optional and documented for informational purposes only
 > 
@@ -160,7 +186,7 @@ oc config current-context
 
 You can use `oc config get-contexts` to list all available contexts.
 
-You can switch contexts and thus the logged-on user as follows:
+You can switch contexts and thus the logged-in user as follows:
 
 ```
 # oc whoami
@@ -179,8 +205,72 @@ Switched to context "/api-ocp4-hX.rhaw.io:6443/the-example-user".
 the-example-user
 ```
 
-## Example: ldap Authentication Provider
+## Example: ldap identity provider
 
-<TODO>
+> The OCP4 LDAP identity provider setup is different to setup of the provider in OCP3!
 
-> Details can be found in the [product documentation](https://docs.openshift.com/container-platform/4.2/authentication/identity_providers/configuring-ldap-identity-provider.html).
+First we have to create a secret with the bindPassword of the LDAP server as content.
+	
+```
+oc create secret generic ldap-secret --from-literal=bindPassword=<password> -n openshift-config
+```	
+
+If possible, you must obtain the certificate authority (CA) certificate used to sign the AD server certificate. Ask your LDAP or AD administrator to provide this for you in PEM format. If this isn’t possible and if you are reasonably sure your network connection isn’t compromised, you can use openssl to retrieve the server certificate from the server. The following example demonstrates how to do this.
+	
+```
+openssl s_client -connect ldap.domain.tld:636 -showcerts < /dev/null
+```
+
+If the PEM was made on a Windows machine we have to correct the line end so the PEM will work without any problems. To fix the line end issue we ran the following command against the provided file:
+
+```
+awk '{ sub("\r$", ""); print }' windows.pem > unix.pem
+```
+
+Identity providers use OpenShift Container Platform ConfigMaps in the openshift-config namespace to contain the certificate authority bundle. These are primarily used to contain certificate bundles needed by the identity provider.
+Define an OpenShift Container Platform ConfigMap containing the certificate authority by using the following command. The certificate authority must be stored in the ca.crt key of the ConfigMap.
+	
+```
+oc create configmap ca-config-map --from-file=ca.crt=/path/to/ca -n openshift-config
+```	
+
+The following Custom Resource (CR) shows the parameters and acceptable values for an LDAP identity provider.
+
+```
+...
+apiVersion: config.openshift.io/v1
+kind: OAuth
+metadata:
+  name: cluster
+spec:
+  identityProviders:
+  - name: ldapidp 
+    mappingMethod: claim 
+    type: LDAP
+    ldap:
+      attributes:
+        id: 
+        - dn
+        email: 
+        - mail
+        name: 
+        - cn
+        preferredUsername: 
+        - uid
+      bindDN: "" 
+      bindPassword: 
+        name: ldap-secret
+      ca: 
+        name: ca-config-map
+      insecure: false 
+      url: "ldap://ldap.example.com/ou=users,dc=acme,dc=com?uid" 
+...
+```
+
+Apply the LDAP CR to the cluster:
+
+```
+oc apply -f ldap_cr.yaml
+```
+
+> Details can be found in the [product documentation](https://docs.openshift.com/container-platform/4.3/authentication/identity_providers/configuring-ldap-identity-provider.html).
