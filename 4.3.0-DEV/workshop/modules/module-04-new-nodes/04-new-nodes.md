@@ -108,3 +108,54 @@ virt-install -n worker04.hX.rhaw.io --description "Worker04 Machine for Openshif
 ```
 
 After that we will just follow the steps we did with worker03.hX.rhaw.io.
+
+> After 24 hours the cluster rotates the first time the certificates! If you want to add a new node after this 24 hours we have to use the new certificate!
+
+An attempt to add a new node ends up with a failure due to certificate signed by unknown authority!
+
+In general, one has to deploy a new worker in the same way as during the installation process but using updated ignition file.
+
+The directory with manifest and Ignition config files that were used for the installation is required.
+
+Below are MANUAL and AUTOMATED approach, in both cases create some temporary directory (IMPORTANT) where you put worker.ign file before you start.
+
+##### MANUAL
+
+Retrieve the certificate from the api-int.api-int.<cluster.domain>:22623 and save in a temporary file (for example api-int.pem)
+
+```
+openssl s_client -connect api-int.${domain}:22623 -showcerts
+```
+
+> NOTE: the certificate is a block of text starting with "BEGIN CERTIFICATE" and ending at "END CERTIFICATE"
+
+Encode the certificate using base64 with "--wrap=0" option
+
+```
+base64 --wrap=0 ./api-int.pem > ./api-int.base64.pem
+```
+
+Just in case make a backup of worker.ign and then replace ignition.security.tls.certificateAuthorities[0].source with a new value obtained in the previous step
+
+```
+cp ./worker.ign ./worker.ign.backup
+```
+
+put the content of api-int.base64 file to the worker.ign file and place it as below instead of <VALUE>
+
+```
+{"ignition":{"config":{"append":[{"source":"https://api-int.<cluster.domain>:22623/config/metal-worker","verification":{}}]},"security":{"tls":{"certificateAuthorities":[{"source":"data:text/plain;charset=utf-8;base64,<VALUE>","verification":{}}]}},"timeouts":{},"version":"2.2.0"},"networkd":{},"passwd":{},"storage":{},"systemd":{}}
+```
+
+Upload the updated worker.ign file to the HTTP server you were using for your OCP cluster deployment and start the worker machine.
+
+##### AUTOMATED
+
+Replace api-int.api-int.<cluster.domain> with your FQDN only and run below commands
+
+```
+echo "q" | openssl s_client -connect api-int.<cluster.domain>:22623  -showcerts | awk '/-----BEGIN CERTIFICATE-----/,/-----END CERTIFICATE-----/' | base64 --wrap=0 | tee ./api-int.base64 && \
+sed --regexp-extended --in-place=.backup "s%base64,[^,]+%base64,$(cat ./api-int.base64)\"%" ./worker.ign
+```
+
+Check is the file changed, if yes, then upload the updated worker.ign file to the HTTP server you were using for your OCP cluster deployment and start the worker machine.
