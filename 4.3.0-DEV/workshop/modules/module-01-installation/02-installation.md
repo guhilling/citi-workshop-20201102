@@ -202,45 +202,7 @@ After that we can check the csr status again and validate that they are all "App
 
 ## Intermediate Image Registry Storage Configuration
 
-If the image-registry operator is not available after installation, we must configure storage for it. Instructions for both configuring a PersistentVolume, which is required for production clusters, and for configuring an empty directory as the storage location, which is available for only non-production clusters, are shown in this workshop. For now we just append dynamical storage to the registry.
-
-First we check if we do not have a registry pod:
-
-```
-[root@services ~]# oc get pod -n openshift-image-registry
-NAME                                              READY   STATUS    RESTARTS   AGE
-cluster-image-registry-operator-56f5f56b8-ssjxj   2/2     Running   0          6m40s
-```
-
-```
-[root@services ~]# oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{"spec":{"storage":{"emptyDir":{}}}}'
-config.imageregistry.operator.openshift.io/cluster patched
-```
-
-On platforms that do not provide shareable object storage, the OpenShift Image Registry Operator bootstraps itself as `Removed`. This allows openshift-installer to complete installations on these platform types.
-After installation, you must edit the Image Registry Operator configuration to switch the ManagementState from `Removed` to `Managed`.
-
-```
-[root@services ~]# oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{"spec":{"managementState":"Managed"}}'
-config.imageregistry.operator.openshift.io/cluster patched
-```
-
-Now we can watch the creation of the missing pods:
-
-```
-[root@services ~]# watch oc get pod -n openshift-image-registry
-NAME                                              READY   STATUS              RESTARTS   AGE
-cluster-image-registry-operator-56f5f56b8-ssjxj   2/2     Running             0          8m34s
-image-registry-57944b948b-42jvh                   0/1     ContainerCreating   0          6s
-image-registry-64d649744c-bhn7k                   0/1     ContainerCreating   0          6s
-node-ca-gn8v8                                     0/1     ContainerCreating   0          6s
-node-ca-mzbwz                                     0/1     ContainerCreating   0          6s
-node-ca-pxnwx                                     0/1     ContainerCreating   0          6s
-node-ca-ql7s5                                     0/1     ContainerCreating   0          7s
-node-ca-wql85                                     0/1     ContainerCreating   0          6s
-```
-
-The pods should now be up and running.
+``This part was pushed into the registry chapter!``
 
 ## Completing installation on User Provisioned Infrastructure:
 
