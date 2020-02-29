@@ -1,4 +1,4 @@
-## Adding new Node to Cluster:
+## Adding new Node to Cluster
 
 An important task for operations is to adding new nodes to the cluster. The reason could me more workload on the cluster. Nodes for specific reasons (infrastructure nodes), nodes for specific purpouse (nodes for specific customers)
 
@@ -109,7 +109,12 @@ virt-install -n worker04.hX.rhaw.io --description "Worker04 Machine for Openshif
 
 After that we will just follow the steps we did with worker03.hX.rhaw.io.
 
+Adding new Node to Cluster after 24+ hours
+
 > After 24 hours the cluster rotates the first time the certificates! If you want to add a new node after this 24 hours we have to use the new certificate!
+
+When installing OCP4 clusters a bootstrap certificate is created and is used on the master nodes.
+Because certificates can not be revoked, this certificate is made with a short expiry time and 24 hours after cluster installation, it can not be used again.
 
 An attempt to add a new node ends up with a failure due to certificate signed by unknown authority!
 
