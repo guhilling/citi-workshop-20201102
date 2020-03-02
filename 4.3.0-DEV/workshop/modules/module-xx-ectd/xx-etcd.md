@@ -116,7 +116,30 @@ get / --prefix --keys-only | sed '/^$/d' | cut -d/ -f3 | sort | uniq -c | sort -
 
 ### compact etcd
 
+An etcd cluster needs periodic maintenance to remain reliable. Depending on an etcd application's needs, this maintenance can usually be automated and performed without downtime or significantly degraded performance.
+All etcd maintenance manages storage resources consumed by the etcd keyspace. Failure to adequately control the keyspace size is guarded by storage space quotas; if an etcd member runs low on space, a quota will trigger cluster-wide alarms which will put the system into a limited-operation maintenance mode. To avoid running out of space for writes to the keyspace, the etcd keyspace history must be compacted. Storage space itself may be reclaimed by defragmenting etcd members. Finally, periodic snapshot backups of etcd member state makes it possible to recover any unintended logical data loss or corruption caused by operational error.
+
+Since etcd keeps an exact history of its keyspace, this history should be periodically compacted to avoid performance degradation and eventual storage space exhaustion. Compacting the keyspace history drops all information about keys superseded prior to a given keyspace revision. The space used by these keys then becomes available for additional writes to the keyspace.
+The keyspace can be compacted automatically with `etcd`'s time windowed history retention policy, or manually with `etcdctl`. The `etcdctl` method provides fine-grained control over the compacting process whereas automatic compacting fits applications that only need key history for some length of time.
+
 ### defrag etcd
+
+After compacting the keyspace, the backend database may exhibit internal fragmentation. Any internal fragmentation is space that is free to use by the backend but still consumes storage space. Compacting old revisions internally fragments `etcd` by leaving gaps in backend database. Fragmented space is available for use by `etcd` but unavailable to the host filesystem. In other words, deleting application data does not reclaim the space on disk.
+
+The process of defragmentation releases this storage space back to the file system. Defragmentation is issued on a per-member so that cluster-wide latency spikes may be avoided.
+
+To defragment an etcd member, use the `etcdctl defrag` command:
+
+```sh
+$ etcdctl defrag
+Finished defragmenting etcd member[127.0.0.1:2379]
+```
+
+**Note that defragmentation to a live member blocks the system from reading and writing data while rebuilding its states**.
+
+**Note that defragmentation request does not get replicated over cluster. That is, the request is only applied to the local node. Specify all members in `--endpoints` flag or `--cluster` flag to automatically find all cluster members.**
+
+Run defragment operations for all endpoints in the cluster associated with the default endpoint:
 
 ```
 # etcdctl \
@@ -131,6 +154,10 @@ Finished defragmenting etcd member[https://etcd-2.ocp4.h12.rhaw.io:2379]
 ```
 
 ### create etcd snapshots
+
+Snapshotting the `etcd` cluster on a regular basis serves as a durable backup for an etcd keyspace. By taking periodic snapshots of an etcd member's backend database, an `etcd` cluster can be recovered to a point in time with a known good state.
+
+A snapshot is taken with `etcdctl`:
 
 ```
 # etcdctl \
@@ -161,6 +188,7 @@ etcdctl \
 --cert /etc/ssl/etcd/system:etcd-server:etcd-0.ocp4.h12.rhaw.io.crt \
 --key /etc/ssl/etcd/system:etcd-server:etcd-0.ocp4.h12.rhaw.io.key \
 --cacert /etc/ssl/etcd/ca.crt \
+--command-timeout=60s
 --endpoints  https://etcd-0.ocp4.h12.rhaw.io:2379,https://etcd-1.ocp4.h12.rhaw.io:2379,https://etcd-2.ocp4.h12.rhaw.io:2379 \
 check perf    
  60 / 60 Boooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo! 100.00%1m0s
