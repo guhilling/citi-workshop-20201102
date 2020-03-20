@@ -502,21 +502,7 @@ Now we need to create a SSH key pair to access to use later to access the CoreOS
 Next we need to create the ignition files that will be used during the installation:
 
 ```
-[root@services ~]# cd /root
-```
-
-```
-[root@services ~]# mkdir -p ocp4
-```
-
-```
-[root@services ~]# cd ocp4
-```
-
-Now we need to create the install-config-base.yaml file:
-
-```
-[root@services ~]# vim /root/ocp4/install-config-base.yaml
+[root@services ~]# vim install-config-base.yaml
 ```
 
 ```
@@ -561,57 +547,131 @@ To obtain this key please execute:
 [root@services ~]# cat /root/.ssh/id_rsa.pub
 ```
 
-Copy the content of the output into sshKey: Please don't forget the quotes at the beginning and the end.
+Copy the content of the output into the sshKey parameter: Don't miss the quotes at the beginning and the end of the cpoied string!
+
+Create the direcory ocp4
+
+```
+[root@services ~]# mkdir -p ocp4
+```
+And change into it
+
+```
+[root@services ocp4]# cd ocp4
+```
+
+Copy the install-config-base.yaml file into the ocp4 directory and rename it to install-config.yaml
+
+```
+[root@services ocp4]# cp ../install-config-base.yaml install-config.yaml
+```
+
+Don't forget to copy this file this is very important!!! If this file is missing, the creation of the ignition files will fail!
+
+> Everytime you recreate the ignition files you need to ensure that the ocp4 directory is empty except the install-config-base.yaml file and the manifest files have to be recreated and modifyied. Very Important the .openshift_install_state.json file needs to be deleted before you recreate the ignition file. This file contains the installation certificates and can damage your installation when you use old certificates in new ignition files.
+
+
+Because we want to prevent pods from being scheduled on the control plane machines (masters), we have to modifiy the `manifests/cluster-scheduler-02-config.yml` Kubernetes manifest file.
+
+To create the Kubernetes manifest files run:
+
+```
+[root@services ocp4]# openshift-install create manifests
+INFO Consuming Install Config from target directory 
+WARNING Making control-plane schedulable by setting MastersSchedulable to true for Scheduler cluster settings
+```
+
+Directory content looks now like this (the install-config.yaml is gone!):
+
+```
+[root@services ocp4]# tree /root/ocp4
+/root/ocp4
+├── manifests
+│   ├── 04-openshift-machine-config-operator.yaml
+│   ├── cluster-config.yaml
+│   ├── cluster-dns-02-config.yml
+│   ├── cluster-infrastructure-02-config.yml
+│   ├── cluster-ingress-02-config.yml
+│   ├── cluster-network-01-crd.yml
+│   ├── cluster-network-02-config.yml
+│   ├── cluster-proxy-01-config.yaml
+│   ├── cluster-scheduler-02-config.yml
+│   ├── cvo-overrides.yaml
+│   ├── etcd-ca-bundle-configmap.yaml
+│   ├── etcd-client-secret.yaml
+│   ├── etcd-host-service-endpoints.yaml
+│   ├── etcd-host-service.yaml
+│   ├── etcd-metric-client-secret.yaml
+│   ├── etcd-metric-serving-ca-configmap.yaml
+│   ├── etcd-metric-signer-secret.yaml
+│   ├── etcd-namespace.yaml
+│   ├── etcd-service.yaml
+│   ├── etcd-serving-ca-configmap.yaml
+│   ├── etcd-signer-secret.yaml
+│   ├── kube-cloud-config.yaml
+│   ├── kube-system-configmap-root-ca.yaml
+│   ├── machine-config-server-tls-secret.yaml
+│   └── openshift-config-secret-pull-secret.yaml
+└── openshift
+    ├── 99_kubeadmin-password-secret.yaml
+    ├── 99_openshift-cluster-api_master-user-data-secret.yaml
+    ├── 99_openshift-cluster-api_worker-user-data-secret.yaml
+    ├── 99_openshift-machineconfig_99-master-ssh.yaml
+    └── 99_openshift-machineconfig_99-worker-ssh.yaml
+
+2 directories, 30 files
+```
+
+We have to set the value of the parameter `mastersSchedulable` from true to false
+
+```
+[root@services ocp4]# sed -i 's/true/false/' manifests/cluster-scheduler-02-config.yml
+```
 
 Now we will create the ignition files:
 
 ```
-[root@services ~]# cd /root/ocp4/
+[root@services ocp4]# openshift-install create ignition-configs
+INFO Consuming Install Config from target directory 
+INFO Consuming Worker Machines from target directory 
+INFO Consuming Master Machines from target directory 
+INFO Consuming Openshift Manifests from target directory 
+INFO Consuming Common Manifests from target directory 
+```
+
+The content of the directory ocp4 has now this content (the directoies openshift and manifests are gone!)
+
+```
+[root@services ocp4]# tree /root/ocp4
+/root/ocp4
+├── auth
+│   ├── kubeadmin-password
+│   └── kubeconfig
+├── bootstrap.ign
+├── master.ign
+├── metadata.json
+└── worker.ign
+
+```
+
+We have to copy the files to our httpd server:
+
+```
+[root@services ocp4]# mkdir -p /var/www/html/openshift4/4.3.0/ignitions
 ```
 
 ```
-[root@services ~]# cp install-config-base.yaml install-config.yaml
-```
-
-Don't forget to copy this file this is very important!!! If this file is missing, then the creation of the ignition files will fail!!!
-
-> Everytime you recreate the ignition files you need to ensure that the ocp4 directory is empty except the install-config-base.yaml file. Very Important the .openshift_install_state.json file needs to be deleted before you recreate the ignition file. This file contains the installation certificates and can damage your installation when you use old certificates in new ignition files.
-
-```
-[root@services ~]# openshift-install create ignition-configs
+[root@services ocp4]# cp -v *.ign /var/www/html/openshift4/4.3.0/ignitions/
 ```
 
 ```
-drwxr-xr-x. 3 root root     195 29. Nov 18:01 .
-dr-xr-x---. 9 root root    4096 29. Nov 18:00 ..
-drwxr-xr-x. 2 root root      50 29. Nov 18:01 auth
--rw-r--r--. 1 root root  288789 29. Nov 18:01 bootstrap.ign
--rw-r--r--. 1 root root    3716 24. Nov 23:58 install-config-base.yaml
--rw-r--r--. 1 root root    1825 29. Nov 18:01 master.ign
--rw-r--r--. 1 root root      96 29. Nov 18:01 metadata.json
--rw-r--r--. 1 root root   58088 29. Nov 18:01 .openshift_install.log
--rw-r--r--. 1 root root 1190917 29. Nov 18:01 .openshift_install_state.json
--rw-r--r--. 1 root root    1825 29. Nov 18:01 worker.ign
+[root@services ocp4]# restorecon -RFv /var/www/html/
 ```
 
-Now we need to copy the files to our httpd server:
+We are done now with the installation preparation steps and can start the initial cluster installation.
 
 ```
-[root@services ~]# mkdir -p /var/www/html/openshift4/4.3.0/ignitions
-```
-
-```
-[root@services ~]# cp -v *.ign /var/www/html/openshift4/4.3.0/ignitions/
-```
-
-```
-[root@services ~]# restorecon -RFv /var/www/html/
-```
-
-Now we are done with the installation and can start the initial cluster installation.
-
-```
-[root@services ~]# systemctl enable --now haproxy.service dhcpd httpd tftp named
+[root@services ocp4]# systemctl enable --now haproxy.service dhcpd httpd tftp named
 ```
 
 > Important: ensure every time that haproxy is up and running. Sometimes during reboot of your service machine it is not coming up.
@@ -619,19 +679,19 @@ Now we are done with the installation and can start the initial cluster installa
 To ensure type:
 
 ```
-[root@services ~]# systemctl status haproxy
+[root@services ocp4]# systemctl status haproxy
 ```
 
 If the state is failed then type:
 
 ```
-[root@services ~]# systemctl restart haproxy
+[root@services ocp4]# systemctl restart haproxy
 ```
 
-re-check again:
+Re-check again:
 
 ```
-[root@services ~]# systemctl status haproxy
+[root@services ocp4]# systemctl status haproxy
 ```
 
-Now we are able to install our virtual machines for installing openshift cluster
+Now we are able to install an OpenShift 4 cluster onto our virtual machines.
