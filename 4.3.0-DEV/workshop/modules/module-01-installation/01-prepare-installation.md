@@ -499,7 +499,11 @@ Now we need to create a SSH key pair to access to use later to access the CoreOS
 [root@services ~]# ssh-keygen -t rsa -N "" -f /root/.ssh/id_rsa
 ```
 
-Next we need to create the ignition files that will be used during the installation:
+## Set up the ignition files
+
+We have to create the ignition files they will be used for the installation:
+
+First we start with the install-config-base.yaml file
 
 ```
 [root@services ~]# vim install-config-base.yaml
