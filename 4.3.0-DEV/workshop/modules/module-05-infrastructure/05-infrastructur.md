@@ -27,7 +27,7 @@ spec:
       machineconfiguration.openshift.io/role: infra
   nodeSelector:
     matchLabels:
-    node-role.kubernetes.io/infra: ""
+      node-role.kubernetes.io/infra: ""
   paused: false
 ```
 
