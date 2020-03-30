@@ -149,7 +149,34 @@ cp ./worker.ign ./worker.ign.backup
 put the content of api-int.base64 file to the worker.ign file and place it as below instead of <VALUE>
 
 ```
-{"ignition":{"config":{"append":[{"source":"https://api-int.<cluster.domain>:22623/config/metal-worker","verification":{}}]},"security":{"tls":{"certificateAuthorities":[{"source":"data:text/plain;charset=utf-8;base64,<VALUE>","verification":{}}]}},"timeouts":{},"version":"2.2.0"},"networkd":{},"passwd":{},"storage":{},"systemd":{}}
+{
+  "ignition": {
+    "config": {
+      "append": [
+        {
+          "source": "https://api-int.<cluster.domain>:22623/config/metal-worker",
+          "verification": {}
+        }
+      ]
+    },
+    "security": {
+      "tls": {
+        "certificateAuthorities": [
+          {
+            "source": "data:text/plain;charset=utf-8;base64,<VALUE>",
+            "verification": {}
+          }
+        ]
+      }
+    },
+    "timeouts": {},
+    "version": "2.2.0"
+  },
+  "networkd": {},
+  "passwd": {},
+  "storage": {},
+  "systemd": {}
+}
 ```
 
 Upload the updated worker.ign file to the HTTP server you were using for your OCP cluster deployment and start the worker machine.
