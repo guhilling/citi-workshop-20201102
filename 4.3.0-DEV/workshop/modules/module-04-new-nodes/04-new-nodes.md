@@ -109,7 +109,7 @@ virt-install -n worker04.hX.rhaw.io --description "Worker04 Machine for Openshif
 
 After that we will just follow the steps we did with worker03.hX.rhaw.io.
 
-Adding new Node to Cluster after 24+ hours
+## Adding new Node to Cluster after 24+ hours
 
 > After 24 hours the cluster rotates the first time the certificates! If you want to add a new node after this 24 hours we have to use the new certificate!
 
