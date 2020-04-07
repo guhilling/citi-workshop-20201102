@@ -9,7 +9,6 @@ echo "192.168.100.254 services.h${i}.rhaw.io services" >> /etc/hosts
 /usr/local/sbin/ocp-cluster-destroy.sh
 virsh destroy services.hX.rhaw.io
 rm -Rf /mnt/ocp_images/*.qcow2
-virsh destroy services.hX.rhaw.io
 sed -i "s/hX/h${i}/g" /usr/local/sbin/ocp-build-start-cluster-vms.sh
 sed -i "s/hX/h${i}/g" /usr/local/sbin/ocp-cluster-destroy.sh
 sed -i "s/hX/h${i}/g" /etc/libvirt/qemu/networks/ocp4-network.xml
