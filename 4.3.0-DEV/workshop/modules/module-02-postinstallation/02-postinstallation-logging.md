@@ -45,8 +45,9 @@ metadata:
 
 ### Deploy the ES Operator
 
-Create two Operator Group object YAML files (for example, og-es1.yaml and og-es2.yaml) for the Elasticsearch operator and create using `oc create -f og-es1.yaml oc create -f og-es1.yaml`:
+Create two Operator Group object YAML files (for example, og-es.yaml and og-logging.yaml) for the Elasticsearch operator and create using `oc create -f og-es.yaml oc create -f og-logging.yaml`:
 
+og-logging.yaml
 ```
 apiVersion: operators.coreos.com/v1
 kind: OperatorGroup
@@ -57,6 +58,7 @@ spec: {}
 ```
 and:
 
+og-es.yaml
 ```
 apiVersion: operators.coreos.com/v1
 kind: OperatorGroup
