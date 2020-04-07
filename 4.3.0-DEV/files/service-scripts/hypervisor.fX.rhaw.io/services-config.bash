@@ -13,6 +13,6 @@ sed -i "s/h12/h${i}/g" /var/named/h${i}.rhaw.io.db
 sed -i "s/h12/h${i}/g" /var/named/h${i}.rhaw.io.reverse.db
 echo "192.168.100.254 services.h${i}.rhaw.io services" > /etc/hosts
 
-systemctl restart dhcp
+systemctl restart dhcpd
 systemctl restart named
 systemctl restart haproxy
