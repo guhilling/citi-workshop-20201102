@@ -62,7 +62,7 @@ apiVersion: operators.coreos.com/v1
 kind: OperatorGroup
 metadata:
   name: openshift-logging
-  namespace: openshift-kogging 
+  namespace: openshift-logging 
 spec:
   targetNamespaces:
   - "openshift-logging"
