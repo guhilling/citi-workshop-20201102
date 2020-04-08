@@ -281,9 +281,14 @@ spec:
           cpu: "1"
           memory: "2Gi"
   visualization:
-    type: "kibana"  
+    type: "kibana"
     kibana:
-      replicas: 1
+      resources:
+        limits:
+          memory: 1Gi
+        requests:
+          cpu: 500m
+          memory: 1Gi
   curation:
     type: "curator"  
     curator:
