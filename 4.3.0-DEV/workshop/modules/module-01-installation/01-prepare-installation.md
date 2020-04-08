@@ -668,7 +668,7 @@ We have to copy the files to our httpd server:
 [root@services ocp4]# cp -v *.ign /var/www/html/openshift4/4.3.0/ignitions/
 ```
 ```
-[root@services ocp4]# chmod 644 /var/www/html/4.3.0/ignitions/*.ign
+[root@services ocp4]# chmod 644 /var/www/html/openshift44.3.0/ignitions/*.ign
 ```
 
 ```
