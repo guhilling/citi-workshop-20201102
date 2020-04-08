@@ -35,7 +35,7 @@ metadata:
 [root@services ~]# oc create -f namespace-es.yaml
 namespace/openshift-operators-redhat created
 ```
-Create a Namespace for the Cluster Logging Operator (for example, namespace-logging.yaml) and create using `oc create -f namespace-logging.yaml`:
+Create a Namespace for the Cluster Logging Operator (for example, namespace-logging.yaml)
 ```sh
 [root@services ~]# vim namespace-logging.yaml
 ```
@@ -60,7 +60,7 @@ namespace/openshift-logging created
 Create two Operator Group object YAML files (for example, og-es.yaml and og-logging.yaml) for the Elasticsearch operator
 
 ```sh
-[root@services ~]# vim og-logging.yaml
+[root@services ~]# vim og-es.yaml
 ```
 ```yaml
 apiVersion: operators.coreos.com/v1
@@ -71,15 +71,14 @@ metadata:
 spec: {}
 ```
 ```sh
-[root@services ~]# vim og-es.yaml
+[root@services ~]#oc create -f og-es.yaml
+operatorgroup.operators.coreos.com/openshift-operators-redhat created
 ```
+and
 ```sh
-[root@services ~]# oc create -f og-logging.yaml
+[root@services ~]# vim og-logging.yaml
 ```
-and:
-```sh
-[root@services ~]# og-es.yaml
-```
+
 ```yaml
 apiVersion: operators.coreos.com/v1
 kind: OperatorGroup
@@ -92,12 +91,13 @@ spec:
 ```
 ```
 [root@services ~]# oc create -f og-loging.yaml
+operatorgroup.operators.coreos.com/openshift-logging created
 ```
 
 Use the following command to get the channel value required for the next step.
 
 ```sh
-[root@services ~]# oc get packagemanifest elasticsearch-operator -n openshift-marketplace -o jsonpath='{.status.channels[].name}'
+[root@services ~]# oc get packagemanifest elasticsearch-operator -n openshift-marketplace -o jsonpath='{.status.defaultChannel}'
 4.3
 ```
 
@@ -121,11 +121,13 @@ spec:
 ```
 ```sh
 [root@services ~]# oc create -f operator-sub-es.yaml
+subscription.operators.coreos.com/elasticsearch-9qbmc created
 ```
 Change to the openshift-operators-redhat project
 
 ```sh
 [root@services ~]# oc project openshift-operators-redhat
+Now using project "openshift-operators-redhat" on server "https://api.ocp4.h1.rhaw.io:6443".
 ```
 
 Create a Role-based Access Control (RBAC) object file (for example, rbac-es.yaml) including a role and a rolebinding to grant Prometheus permission to access the openshift-operators-redhat namespace.
@@ -167,6 +169,8 @@ namespace: openshift-operators-redhat
 ```
 ```sh
 [root@services ~]# oc create -f rbac-es.yaml
+role.rbac.authorization.k8s.io/prometheus-k8s created
+rolebinding.rbac.authorization.k8s.io/prometheus-k8s created
 ```
 
 ### Install Cluster Logging Operator
@@ -175,19 +179,20 @@ Change to the openshift-logging project:
 
 ```sh
 [root@services ~]# oc project openshift-logging
+Now using project "openshift-logging" on server "https://api.ocp4.h1.rhaw.io:6443".
 ```
 
 Use the following command to get the channel value required for the next step.
 
 ```sh
-[root@services ~]# oc get packagemanifest cluster-logging -n openshift-marketplace -o jsonpath='{.status.channels[].name}'
+[root@services ~]# oc get packagemanifest cluster-logging -n openshift-marketplace -o jsonpath='{.status.defaultChannel}'
 4.3
 ```
 
 Create a Subscription object YAML file (for example, operator-sub-logging.yaml) to subscribe a Namespace to an Operator. Put the channel value into the file.
 
 ```sh
-[root@services ~]# vim rbac-es.yaml
+[root@services ~]# vim operator-sub-logging.yaml
 ```
 ```yaml
 apiVersion: operators.coreos.com/v1alpha1
@@ -204,6 +209,7 @@ spec:
 ```
 ```sh
 [root@services ~]# oc create -f operator-sub-logging.yaml
+subscription.operators.coreos.com/cluster-logging created
 ```
 ### Check Operator Installation
 
@@ -213,31 +219,31 @@ Check the existence of the operators
 
 ```sh
 [root@services ~]# oc get clusterserviceversion
-NAME                                        DISPLAY                 VERSION REPLACES PHASE
-clusterlogging.4.2.13-201912230557          Cluster Logging         4.2.13-201912230557 Succeeded
-elasticsearch-operator.4.2.13-201912230557  Elasticsearch Operator  4.2.13-201912230557 Succeeded
+NAME                                         DISPLAY                  VERSION               REPLACES   PHASE
+clusterlogging.4.3.10-202004010435           Cluster Logging          4.3.10-202004010435              Succeeded
+elasticsearch-operator.4.3.10-202003311428   Elasticsearch Operator   4.3.10-202003311428              Succeeded
 ```
 
 Check existence of pods for both operators
 
 ```sh
 [root@services ~]# oc get pods -n openshift-operators-redhat
-NAME READY STATUS RESTARTS AGE
-elasticsearch-operator-74bb66456c-mgtt6 1/1 Running 0 30m
+NAME                                      READY   STATUS    RESTARTS   AGE
+elasticsearch-operator-55866cfc99-fn4qx   1/1     Running   0          5m54s
 ```
 
 ```sh
 [root@services ~]# oc get pods -n openshift-logging
-NAME READY STATUS RESTARTS AGE
-cluster-logging-operator-5cb9bf8c7f-pfg6t 1/1 Running 0 9m41s
+NAME                                        READY   STATUS    RESTARTS   AGE
+cluster-logging-operator-86c85c5564-prf4b   1/1     Running   0          118s
 ```
 
 Check existance of the Custom Ressource Definition (CRD) objects for logging
 
 ```sh
-[root@services ~]# oc get crd | grep loggin
-clusterloggings.logging.openshift.io 2020-01-10T09:16:59Z
-elasticsearches.logging.openshift.io 2020-01-10T09:02:30Z
+[root@services ~]# oc get crd | grep -e clusterloggings -e elasticsearches
+clusterloggings.logging.openshift.io                        2020-04-08T21:50:23Z
+elasticsearches.logging.openshift.io                        2020-04-08T21:45:46Z
 ```
 
 ### Deloy Cluster Logging Components (using the operators)
@@ -247,7 +253,7 @@ We now rollout the cluster logging components using the installed operators.
 As noted above, we install ElasticSearch using ephemeral storage only in this chapter. Adding persistent storage is described in Storage chapter. Note you can install ElasticSearch with persistent storage when cominbing the information of Storage chapter with this basic installation approach.
 
 Create a CRD for logging (for example, cust-resource-def-logging.yaml) to subscribe a Namespace to an Operator.
-We initially leave the storage definition empty to rollout ElasticSearch with ephemeral storage and add storage later on.
+We initially leave the storage definition empty (storage: {}) to rollout ElasticSearch with ephemeral storage and add storage later on.
 
 > Note: We rollout only 2 ElasticSearch replicas on 2 nodes and configure ElasticSearch for a minimal memory requests (2GB rather than the default 16 GB) due to the available resources in our workshop environment.
 
@@ -289,65 +295,56 @@ spec:
 ```
 ```sh
 [root@services ~]# oc create -f cust-resource-def-logging.yaml
+clusterlogging.logging.openshift.io/instance created
 ```
 Wait a few moments and look for the Operator to rollout route, services, deployments, and pods:
 
 ```sh
 [root@services ~]# oc get all
 NAME                                                READY   STATUS    RESTARTS   AGE
-pod/cluster-logging-operator-5cb9bf8c7f-pfg6t       1/1     Running   1          2d4h
-pod/curator-1578799800-5lpjt                        1/1     Running   0          10h
-pod/elasticsearch-cdm-07r3062k-1-bb476b875-gmfwn    1/2     Running   0          47h
-pod/elasticsearch-cdm-07r3062k-2-5dcb98d664-9dpwh   1/2     Running   0          47h
-pod/fluentd-2cvjm                                   1/1     Running   2          47h
-pod/fluentd-hl48p                                   1/1     Running   2          47h
-pod/fluentd-qhkrb                                   1/1     Running   2          47h
-pod/fluentd-r42mq                                   1/1     Running   2          47h
-pod/fluentd-z6vhs                                   1/1     Running   2          47h
-pod/kibana-655fb977b7-ktq9s                         2/2     Running   0          47h
+pod/cluster-logging-operator-86c85c5564-prf4b       1/1     Running   0          36m
+pod/elasticsearch-cdm-jgtzices-1-757564f48d-qd9wp   2/2     Running   0          29m
+pod/elasticsearch-cdm-jgtzices-2-595f447d8c-kzzcg   2/2     Running   0          28m
+pod/fluentd-4tjq2                                   1/1     Running   2          29m
+pod/fluentd-5bvq7                                   1/1     Running   2          29m
+pod/fluentd-5f952                                   1/1     Running   0          29m
+pod/fluentd-5nzg4                                   1/1     Running   2          29m
+pod/fluentd-f6gzs                                   1/1     Running   0          29m
+pod/fluentd-gwf2s                                   1/1     Running   2          29m
+pod/fluentd-mgqsp                                   1/1     Running   0          29m
+pod/kibana-59846c47c5-mt8kf                         2/2     Running   0          29m
 
 NAME                            TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)     AGE
-service/elasticsearch           ClusterIP   172.30.165.102   <none>        9200/TCP    47h
-service/elasticsearch-cluster   ClusterIP   172.30.255.210   <none>        9300/TCP    47h
-service/elasticsearch-metrics   ClusterIP   172.30.25.76     <none>        60000/TCP   47h
-service/fluentd                 ClusterIP   172.30.211.126   <none>        24231/TCP   47h
-service/kibana                  ClusterIP   172.30.228.176   <none>        443/TCP     47h
+service/elasticsearch           ClusterIP   172.30.103.243   <none>        9200/TCP    29m
+service/elasticsearch-cluster   ClusterIP   172.30.23.208    <none>        9300/TCP    29m
+service/elasticsearch-metrics   ClusterIP   172.30.116.234   <none>        60000/TCP   29m
+service/fluentd                 ClusterIP   172.30.165.244   <none>        24231/TCP   29m
+service/kibana                  ClusterIP   172.30.149.214   <none>        443/TCP     29m
 
 NAME                     DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR            AGE
-daemonset.apps/fluentd   5         5         5       5            5           kubernetes.io/os=linux   47h
+daemonset.apps/fluentd   7         7         7       7            7           kubernetes.io/os=linux   29m
 
 NAME                                           READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/cluster-logging-operator       1/1     1            1           2d4h
-deployment.apps/elasticsearch-cdm-07r3062k-1   0/1     1            0           47h
-deployment.apps/elasticsearch-cdm-07r3062k-2   0/1     1            0           47h
-deployment.apps/kibana                         1/1     1            1           47h
+deployment.apps/cluster-logging-operator       1/1     1            1           36m
+deployment.apps/elasticsearch-cdm-jgtzices-1   1/1     1            1           29m
+deployment.apps/elasticsearch-cdm-jgtzices-2   1/1     1            1           28m
+deployment.apps/kibana                         1/1     1            1           29m
 
 NAME                                                      DESIRED   CURRENT   READY   AGE
-replicaset.apps/cluster-logging-operator-5cb9bf8c7f       1         1         1       2d4h
-replicaset.apps/elasticsearch-cdm-07r3062k-1-bb476b875    1         1         0       47h
-replicaset.apps/elasticsearch-cdm-07r3062k-2-5dcb98d664   1         1         0       47h
-replicaset.apps/kibana-655fb977b7                         1         1         1       47h
+replicaset.apps/cluster-logging-operator-86c85c5564       1         1         1       36m
+replicaset.apps/elasticsearch-cdm-jgtzices-1-757564f48d   1         1         1       29m
+replicaset.apps/elasticsearch-cdm-jgtzices-2-595f447d8c   1         1         1       28m
+replicaset.apps/kibana-59846c47c5                         1         1         1       13m
+replicaset.apps/kibana-5b8bdf44f9                         0         0         0       29m
+replicaset.apps/kibana-6758bb798                          0         0         0       13m
+replicaset.apps/kibana-67b996dc5f                         0         0         0       29m
+replicaset.apps/kibana-78b7f8f776                         0         0         0       29m
 
 NAME                    SCHEDULE     SUSPEND   ACTIVE   LAST SCHEDULE   AGE
-cronjob.batch/curator   30 3 * * *   False     0        10h             47h
+cronjob.batch/curator   30 3 * * *   False     0        <none>          29m
 
-NAME                              HOST/PORT                                            PATH   SERVICES   PORT    TERMINATION          WILDCARD
-route.route.openshift.io/kibana   kibana-openshift-logging.apps.ocp4.hX.rhaw.io          kibana     <all>   reencrypt/Redirect   None
-```
-
-```sh
-[root@services ~]# oc get pods
-NAME READY STATUS RESTARTS AGE
-cluster-logging-operator-5cb9bf8c7f-pfg6t 1/1 Running 1 2d4h
-curator-1578799800-5lpjt 1/1 Running 0 47h
-elasticsearch-cdm-07r3062k-1-bb476b875-gmfwn 1/2 Running 0 47h
-elasticsearch-cdm-07r3062k-2-5dcb98d664-9dpwh 1/2 Running 0 47h
-fluentd-2cvjm 1/1 Running 2 47h
-fluentd-hl48p 1/1 Running 2 47h
-fluentd-qhkrb 1/1 Running 2 47h
-fluentd-r42mq 1/1 Running 2 47h
-fluentd-z6vhs 1/1 Running 2 47h
-kibana-655fb977b7-ktq9s 2/2 Running 0 47h
+NAME                              HOST/PORT                                       PATH   SERVICES   PORT    TERMINATION          WILDCARD
+route.route.openshift.io/kibana   kibana-openshift-logging.apps.ocp4.h1.rhaw.io          kibana     <all>   reencrypt/Redirect   None
 ```
 
 After these steps we should have a full working EFK Logging Stack on our Openshift Cluster
