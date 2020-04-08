@@ -219,7 +219,7 @@ As noted above, we install ElasticSearch using ephemeral storage only in this ch
 Create a CRD for logging (for example, cust-resource-def-logging.yaml) to subscribe a Namespace to an Operator and create using `oc create -f cust-resource-def-logging.yaml`.
 We initially leave the storage definition empty to rollout ElasticSearch with ephemeral storage and add storage later on.
 
-> Note: We rollout only 2 ElasticSearch replicas on 2 nodes and configure ElasticSearch for a minimal memory requests (8GB rather than the default 16 GB) due to the available resources in our workshop environment.
+> Note: We rollout only 2 ElasticSearch replicas on 2 nodes and configure ElasticSearch for a minimal memory requests (2GB rather than the default 16 GB) due to the available resources in our workshop environment.
 
 ```
 apiVersion: "logging.openshift.io/v1"
@@ -237,10 +237,10 @@ spec:
       redundancyPolicy: "SingleRedundancy"
       resources:
         limits:
-          memory: "8Gi"
+          memory: "2Gi"
         requests:
           cpu: "1"
-          memory: "8Gi"
+          memory: "2Gi"
   visualization:
     type: "kibana"  
     kibana:
