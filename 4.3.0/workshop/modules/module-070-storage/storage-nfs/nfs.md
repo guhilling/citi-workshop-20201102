@@ -170,7 +170,7 @@ mkdir -p /root/openshift/nfs-configuration/
 [root@services ~]# vim /root/openshift/nfs-configuration/nfs-pv.yaml
 ```
 
-```
+```yaml
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -264,7 +264,7 @@ Create a file 'registry-pv.yaml' having the following content and load it into t
 [root@services ~]# vim /root/openshift/nfs-configuration/registry-pv.yaml
 ```
 
-```
+```yaml
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -348,7 +348,7 @@ Edit the created config map using `oc -n openshift-monitoring edit configmap clu
 [root@services ~]# oc -n openshift-monitoring edit configmap cluster-monitoring-config
 ```
 
-```
+```yaml
 data:
   config.yaml: |
     prometheusK8s:
@@ -402,7 +402,7 @@ Inspect one of the PVCs:
 [root@services ~]# oc get pvc prometheus-pvc-prometheus-k8s-0 -o yaml
 ```
 
-```
+```yaml
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -441,7 +441,7 @@ Create two YAML files for the Prometheus PVs as follows, pointing to the NFS ser
 [root@services ~]# vim /root/openshift/nfs-configuration/m-pv0.yaml
 ```
 
-```
+```yaml
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -464,7 +464,7 @@ spec:
 [root@services ~]# vim /root/openshift/nfs-configuration/m-pv1.yaml
 ```
 
-```
+```yaml
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -489,7 +489,7 @@ Create three YAML files for the AlertManager PVs as follows, pointing to the NFS
 [root@services ~]# vim /root/openshift/nfs-configuration/alert-pv0.yaml
 ```
 
-```
+```yaml
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -512,7 +512,7 @@ spec:
 [root@services ~]# vim /root/openshift/nfs-configuration/alert-pv1.yaml
 ```
 
-```
+```yaml
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -535,7 +535,7 @@ spec:
 [root@services ~]# vim /root/openshift/nfs-configuration/alert-pv2.yaml
 ```
 
-```
+```yaml
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -636,7 +636,7 @@ We now install Cluster Logging again using the known steps, however we add persi
 
 You can re-use the existing 'cust-resource-def-logging.yaml' file of the CRD and simply edit it. As previously, we rollout only 2 ElasticSearch replicas and configure ElasticSearch for a minimal memory requests (8GB rather than the default 16 GB) due to the available resources in our workshop environment.
 
-```
+```yaml
 apiVersion: "logging.openshift.io/v1"
 kind: "ClusterLogging"
 metadata:
@@ -680,9 +680,6 @@ Note that now PVCs got created:
 
 ```
 [root@services ~]# oc get pvc
-```
-
-```
 NAME                                         STATUS    VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 elasticsearch-elasticsearch-cdm-y9htwcau-1   Pending                                                     2m26s
 elasticsearch-elasticsearch-cdm-y9htwcau-2   Pending                                                     2m26s
@@ -690,7 +687,7 @@ elasticsearch-elasticsearch-cdm-y9htwcau-2   Pending                            
 
 Create 2 PV definitions for the created PVCs and loading them using `oc create -f es-pv-1.yaml` (adjusting the following example of the first PV for the 2nd PV):
 
-```
+```yaml
 apiVersion: v1
 kind: PersistentVolume
 metadata:
