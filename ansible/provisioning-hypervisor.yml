@@ -1,9 +1,0 @@
----
-#
-# playbook for provisioning hypervisor
-#
-- name: provisioning hypervisor
-  hosts: hypervisors
-  roles:
-    - openshift-gls-gps-workshop
-...

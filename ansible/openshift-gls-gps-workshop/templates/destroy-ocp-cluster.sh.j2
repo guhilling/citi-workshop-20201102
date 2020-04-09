@@ -1,9 +1,0 @@
-#!/bin/bash
-virsh destroy bootstrap.{{ ansible_fqdn }} && virsh undefine bootstrap.{{ ansible_fqdn }} --remove-all-storage
-virsh destroy master01.{{ ansible_fqdn }} && virsh undefine master01.{{ ansible_fqdn }} --remove-all-storage
-virsh destroy master02.{{ ansible_fqdn }} && virsh undefine master02.{{ ansible_fqdn }} --remove-all-storage
-virsh destroy master03.{{ ansible_fqdn }} && virsh undefine master03.{{ ansible_fqdn }} --remove-all-storage
-virsh destroy worker01.{{ ansible_fqdn }} && virsh undefine worker01.{{ ansible_fqdn }} --remove-all-storage
-virsh destroy worker02.{{ ansible_fqdn }} && virsh undefine worker02.{{ ansible_fqdn }} --remove-all-storage
-virsh list --all
-echo "when virsh list --all shows just workstation and services machine up and running and no other virtual machine, then your cluster is deleted and cleaned up"
