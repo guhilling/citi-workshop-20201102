@@ -193,7 +193,7 @@ Create a file 'nfs-pvc.yaml' on the services machine having the following conten
 [root@services ~]# vim /root/openshift/nfs-configuration/nfs-pvc.yaml
 ```
 
-```
+```yam
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
