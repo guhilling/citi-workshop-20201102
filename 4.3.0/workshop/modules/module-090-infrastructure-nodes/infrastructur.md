@@ -7,6 +7,7 @@ The reason is that after the initial deployment,  an OpenShift 4 Cluster just in
 The worker nodes in OpenShift 4 are meant to replace both infra and worker nodes, which could make sense running smaller setups, though we would argue that is not practical to scale out in larger environments with hundrets of worker nodes. Having a small set of nodes, designated to host OpenShift ingress controllers is a good thing, as we only need to configure those IPs as backends for our applications loadbalancers. If we have not seperated infra from  worker nodes, every time we add new members to our cluster, we would also need reconfiguring our loadbalancer. At the end we could have hundrets of possible worker nodes on our external Loadbalancer acts as a possible endpoint for Openshift Routers.
 
 To prevent this we would create a group of Infra machines, starting with creating a MachineConfigPool, using the following configuration
+
 ```sh
 [root@services ~]# vim /root/openshift/machineconfiguration/infra-machineconfigpool.yaml
 ```
@@ -31,6 +32,7 @@ After crerating the configuration file we need to apply this to our cluster:
 ```sh
 [root@services ~]# oc create -f infra-machineconfigpool.yaml
 ```
+
 ```
 oc get mcp
 NAME     CONFIG                                             UPDATED   UPDATING   DEGRADED   MACHINECOUNT   READYMACHINECOUNT   UPDATEDMACHINECOUNT   DEGRADEDMACHINECOUNT
@@ -38,8 +40,8 @@ infra                                                                           
 master   rendered-master-9b499c1cfc683a5ba9a54c47ce7570d3   True      False      False      3              3                   3                     0
 worker   rendered-worker-da58576c03c205503967c5fdf465ab80   True      False      False      4              4                   4                     0
 ```
-Because just an empty machineconfigpool infra is now existing there's no info at all about it.
 
+Because just an empty machineconfigpool infra is now existing there's no info at all about it.
 
 Having applied that configuration, we would then dump MachineConfig (mc) objects applying to worker nodes
 
@@ -90,21 +92,27 @@ selfLink,
 uid metadata.*
 
 And we need to replace any remaning mention of “worker” by “infra”. 
+
 ```sh
 [root@services ~]# sed -i -e '/annotations/,+1d' -e '/creationTimestamp/d' -e'/generation/d' -e '/ownerReference/,+6d' -e '/resourceVersion/d' -e '/selfLink/d' -e '/uid/ {/data/!d}' -e 's/worker/infra/' 00-infra.yaml
 ```
+
 ```sh
 [root@services ~]# sed -i -e '/annotations/,+1d' -e '/creationTimestamp/d' -e'/generation/d' -e '/ownerReference/,+6d' -e '/resourceVersion/d' -e '/selfLink/d' -e '/uid/ {/data/!d}' -e 's/worker/infra/' 01-infra-container-runtime.yaml
 ```
+
 ```sh
 [root@services ~]# sed -i -e '/annotations/,+1d' -e '/creationTimestamp/d' -e'/generation/d' -e '/ownerReference/,+6d' -e '/resourceVersion/d' -e '/selfLink/d' -e '/uid/ {/data/!d}' -e 's/worker/infra/' 01-infra-kubelet.yaml
 ```
+
 ```sh
 [root@services ~]# sed -i -e '/annotations/,+1d' -e '/creationTimestamp/d' -e'/generation/d' -e '/ownerReference/,+4d' -e '/resourceVersion/d' -e '/selfLink/d' -e '/uid/ {/data/!d}' -e 's/worker/infra/' 99-infra-e4a0d91a-3206-11ea-aab6-525400e1788a-registries.yaml
 ```
+
 ```sh
 [root@services ~]# sed -i -e '/annotations/,+1d' -e '/creationTimestamp/d' -e'/generation/d' -e '/ownerReference/,+6d' -e '/resourceVersion/d' -e '/selfLink/d' -e '/uid/ {/data/!d}' -e 's/worker/infra/' 99-infra-ssh.yaml
 ```
+
 After we're done with our modifications we then applying the resulting files
 
 ```sh
@@ -120,7 +128,6 @@ machineconfig.machineconfiguration.openshift.io/01-infra-container-runtime creat
 ```sh
 [root@services ~]# oc create -f 01-infra-kubelet.yaml
 machineconfig.machineconfiguration.openshift.io/01-infra-kubelet created
-
 ```
 
 ```sh
@@ -188,6 +195,7 @@ worker04   Ready    infra           13h   v1.16.2
 
 When our node is back, we would proceed with the next infra node.
 Check after you modified the last node the machineconfigpool once again
+
 ```
 [root@services ~]# oc get mcp
 NAME     CONFIG                                             UPDATED   UPDATING   DEGRADED   MACHINECOUNT   READYMACHINECOUNT   UPDATEDMACHINECOUNT   DEGRADEDMACHINECOUNT
@@ -212,7 +220,9 @@ spec:
  replicas: 2
 ...
 ```
+
 or run an oc patch command
+
 ```sh
 [root@services ~]# oc patch ingresscontrollers.operator.openshift.io default -n openshift-ingress-operator -p '{"spec":{"nodePlacement":{"nodeSelector":{"matchLabels":{"node-role.kubernetes.io/infra":""}}}}}' --type=merge
 ingresscontroller.operator.openshift.io/default patched
@@ -235,7 +245,9 @@ By default there are two router, if you have to have more e.g. three infra nodes
 [root@services ~]# oc patch ingresscontrollers.operator.openshift.io default -n openshift-ingress-operator --patch '{"spec":{"replicas": 3}}' --type=merge
 ingresscontroller.operator.openshift.io/default patched
 ```
+
 Check the amount of routers
+
 ```sh
 [root@services ~]# oc get pods -n openshift-ingress -o wide
 NAME                              READY   STATUS    RESTARTS   AGE   IP               NODE       NOMINATED NODE   READINESS GATES
@@ -243,11 +255,15 @@ router-default-7d66988b48-9fg6b   1/1     Running   0          20s   192.168.100
 router-default-7d66988b48-k485m   1/1     Running   0          11m   192.168.100.34   worker04   <none>           <none>
 router-default-7d66988b48-vvss7   1/1     Running   0          11m   192.168.100.35   worker05   <none>           <none>
 ```
+
 Place the image registry pod on the infra node
+
 ```sh
 [root@services ~]# oc patch configs.imageregistry.operator.openshift.io/cluster --type=merge -p '{"spec":{"nodeSelector":{"node-role.kubernetes.io/infra": ""}}}'
 ```
+
 Check the image registry pod placement
+
 ```sh
 [root@services ~]# oc get pods -n openshift-image-registry -o wide
 NAME                                              READY   STATUS    RESTARTS   AGE   IP            NODE       NOMINATED NODE   READINESS GATES
