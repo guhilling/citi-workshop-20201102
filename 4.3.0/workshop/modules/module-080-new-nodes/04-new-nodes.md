@@ -148,7 +148,7 @@ cp ./worker.ign ./worker.ign.backup
 
 put the content of api-int.base64 file to the worker.ign file and place it as below instead of <VALUE>
 
-```
+```json
 {
   "ignition": {
     "config": {
