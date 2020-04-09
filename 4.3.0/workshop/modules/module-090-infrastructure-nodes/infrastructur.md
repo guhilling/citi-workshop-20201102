@@ -169,14 +169,14 @@ Once `oc get mc` includes that rendered infra configuration (rendered-infra-52ec
 
 ```sh
 [root@services ~]# oc label node worker03 node-role.kubernetes.io/infra=
-node/worker04 labeled
+node/worker03 labeled
 ```
 
 and:
 
 ```sh
 [root@services ~]# oc label node worker03 node-role.kubernetes.io/worker-
-node/worker04 labeled
+node/worker03 labeled
 ```
 
 From there, our node would be set unschedulable, drained, and rebooted. Our customized MachineConfig should have changed the role label applied when our node boots, which we may confirm once it is done restarting
