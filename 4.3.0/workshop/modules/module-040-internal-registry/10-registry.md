@@ -4,7 +4,7 @@ If the image-registry operator is not available after installation, we must conf
 
 First we check if we do not have a registry pod:
 
-```
+```sh
 [root@services ~]# oc get pod -n openshift-image-registry
 NAME READY STATUS RESTARTS AGE
 cluster-image-registry-operator-56f5f56b8-ssjxj 2/2 Running 0 6m40s
@@ -12,21 +12,21 @@ cluster-image-registry-operator-56f5f56b8-ssjxj 2/2 Running 0 6m40s
 
 If no image-registry pod is showing up, we need to patch the image registry operator with the following command to use local storage:
 
-```
+```sh
 [root@services ~]# oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{"spec":{"storage":{"emptyDir":{}}}}'
 ```
 
 On platforms that do not provide shareable object storage, the OpenShift Image Registry Operator bootstraps itself as `Removed`. This allows openshift-installer to complete installations on these platform types.
 After installation, you must edit the Image Registry Operator configuration to switch the ManagementState from `Removed` to `Managed`.
 
-```
+```sh
 [root@services ~]# oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{"spec":{"managementState":"Managed"}}'
 config.imageregistry.operator.openshift.io/cluster patched
 ```
 
 Now we can watch the creation of the image regisrty pods:
 
-```
+```sh
 [root@services ~]# watch oc get pod -n openshift-image-registry
 NAME                                              READY   STATUS              RESTARTS   AGE
 cluster-image-registry-operator-56f5f56b8-ssjxj   2/2     Running             0          8m34s
@@ -51,7 +51,7 @@ CR object in order to add the nodeSelector.
 
 - First, take a look at it:
 
-```
+```yaml
 oc get configs.imageregistry.operator.openshift.io/cluster -o yaml
 apiVersion: imageregistry.operator.openshift.io/v1
 kind: Config
@@ -122,13 +122,13 @@ For this we can use oc edit, and you'll need to modify the .spec section:
 
 ----
 
-```
+```sh
 oc edit configs.imageregistry.operator.openshift.io/cluster
 ```
 
 The .spec section will need to look like the following:
 
-```
+```yaml
 ...
   nodeSelector:
     node-role.kubernetes.io/infra: ""
@@ -139,7 +139,7 @@ The .spec section will need to look like the following:
 
 - Once you're done, save and exit the editor, and it should confirm the change:
 
-```
+```sh
 config.imageregistry.operator.openshift.io/cluster edited
 ```
 
@@ -147,7 +147,7 @@ config.imageregistry.operator.openshift.io/cluster edited
 
 Same can be achieved by running the following oc patch command
 
-```
+```sh
 oc patch configs.imageregistry.operator.openshift.io/cluster --type=merge -p '{"spec":{"nodeSelector":{"node-role.kubernetes.io/infra": ""}}}'
 ```
 
@@ -156,11 +156,8 @@ node. The registry is in the openshift-image-registry project. If you execute
 the following quickly enough, you may see the old registry pods terminating and
 the new ones starting.:
 
-```
+```sh
 $ oc get pod -n openshift-image-registry
-```
-
-```
 NAME                                               READY   STATUS        RESTARTS   AGE
 cluster-image-registry-operator-5644775d7c-w78kh   1/1     Running       0          34h
 image-registry-5878c9d896-nmkc6                    1/1     Terminating   0          22h
@@ -182,7 +179,7 @@ Also note that the default replica count is 1. In a real-world environment you m
 
 If you look at the node on which the registry landed (noting that you'll likely have to refresh your list of pods by using the previous commands to get its new name):
 
-```
+```sh
 $ oc get pod image-registry-58657f5d4d-hmjph -n openshift-image-registry -o wide
 NAME                              READY   STATUS    RESTARTS   AGE     IP            NODE       NOMINATED NODE   READINESS GATES
 image-registry-58657f5d4d-hmjph   1/1     Running   0          2d21h   10.128.2.15   worker02   <none>           <none>
@@ -192,7 +189,7 @@ image-registry-58657f5d4d-hmjph   1/1     Running   0          2d21h   10.128.2.
 
 it is now running on an infra worker:
 
-```
+```sh
 $ oc get node worker02
 NAME       STATUS   ROLES    AGE     VERSION
 worker02   Ready    infra    2d21h   v1.16.2
