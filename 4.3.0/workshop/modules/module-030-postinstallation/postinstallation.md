@@ -111,7 +111,6 @@ service-catalog-controller-manager         4.3.0     True        False         F
 storage                                    4.3.0     True        False         False      17m
 ```
 
-
   When all of the cluster Operators are available (the kube-apiserver operator is last in state PROGRESSING=True and takes roughly 15min to finish), we can complete the installation.
 
 > The Ignition config files that the installation program generates contain certificates that expire after 24 hours. You must keep the cluster running for 24 hours in a non-degraded state to ensure that the first certificate rotation has finished.

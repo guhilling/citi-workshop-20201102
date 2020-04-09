@@ -16,6 +16,7 @@ The namespace 'openshift-logging' will be later on used by the operators to roll
 ### Create the Namespaces
 
 Create a Namespace for the Elasticsearch Operator (for example namespace-es.yaml)
+
 ```sh
 [root@services ~]# vim namespace-es.yaml
 ```
@@ -31,11 +32,14 @@ metadata:
     openshift.io/cluster-logging: "true"
     openshift.io/cluster-monitoring: "true"
 ```
+
 ```sh
 [root@services ~]# oc create -f namespace-es.yaml
 namespace/openshift-operators-redhat created
 ```
+
 Create a Namespace for the Cluster Logging Operator (for example, namespace-logging.yaml)
+
 ```sh
 [root@services ~]# vim namespace-logging.yaml
 ```
@@ -51,10 +55,12 @@ metadata:
     openshift.io/cluster-logging: "true"
     openshift.io/cluster-monitoring: "true"
 ```
+
 ```sh
 [root@services ~]# oc create -f namespace-logging.yaml
 namespace/openshift-logging created
 ```
+
 ### Deploy the ES Operator
 
 Create two Operator Group object YAML files (for example, og-es.yaml and og-logging.yaml) for the Elasticsearch operator
@@ -62,6 +68,7 @@ Create two Operator Group object YAML files (for example, og-es.yaml and og-logg
 ```sh
 [root@services ~]# vim og-es.yaml
 ```
+
 ```yaml
 apiVersion: operators.coreos.com/v1
 kind: OperatorGroup
@@ -70,11 +77,14 @@ metadata:
   namespace: openshift-operators-redhat 
 spec: {}
 ```
+
 ```sh
 [root@services ~]#oc create -f og-es.yaml
 operatorgroup.operators.coreos.com/openshift-operators-redhat created
 ```
+
 and
+
 ```sh
 [root@services ~]# vim og-logging.yaml
 ```
@@ -89,6 +99,7 @@ spec:
   targetNamespaces:
   - "openshift-logging"
 ```
+
 ```
 [root@services ~]# oc create -f og-loging.yaml
 operatorgroup.operators.coreos.com/openshift-logging created
@@ -106,6 +117,7 @@ Create a Subscription object YAML file (for example, operator-sub-es.yaml) to su
 ```sh
 [root@services ~]# vim operator-sub-es.yaml
 ```
+
 ```yaml
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
@@ -119,10 +131,12 @@ spec:
   sourceNamespace: "openshift-marketplace"
   name: "elasticsearch-operator"
 ```
+
 ```sh
 [root@services ~]# oc create -f operator-sub-es.yaml
 subscription.operators.coreos.com/elasticsearch-9qbmc created
 ```
+
 Change to the openshift-operators-redhat project
 
 ```sh
@@ -135,6 +149,7 @@ Create a Role-based Access Control (RBAC) object file (for example, rbac-es.yaml
 ```sh
 [root@services ~]# vim rbac-es.yaml
 ```
+
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
@@ -167,6 +182,7 @@ subjects:
   name: prometheus-k8s
 namespace: openshift-operators-redhat
 ```
+
 ```sh
 [root@services ~]# oc create -f rbac-es.yaml
 role.rbac.authorization.k8s.io/prometheus-k8s created
@@ -194,6 +210,7 @@ Create a Subscription object YAML file (for example, operator-sub-logging.yaml) 
 ```sh
 [root@services ~]# vim operator-sub-logging.yaml
 ```
+
 ```yaml
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
@@ -207,10 +224,12 @@ spec:
   sourceNamespace: "openshift-marketplace"
   name: "cluster-logging"
 ```
+
 ```sh
 [root@services ~]# oc create -f operator-sub-logging.yaml
 subscription.operators.coreos.com/cluster-logging created
 ```
+
 ### Check Operator Installation
 
 Once the steps for the Operator installation are executed, the operators incl. their pods as well as the Custom Resource Definitions (CRDs) should be visible:
@@ -260,6 +279,7 @@ We initially leave the storage definition empty (storage: {}) to rollout Elastic
 ```sh
 [root@services ~]# vim cust-resource-def-logging.yaml
 ```
+
 ```yaml
 apiVersion: "logging.openshift.io/v1"
 kind: "ClusterLogging"
@@ -289,6 +309,7 @@ spec:
         requests:
           cpu: 500m
           memory: 1Gi
+      replicas: 1
   curation:
     type: "curator"  
     curator:
@@ -298,10 +319,12 @@ spec:
       type: "fluentd"  
       fluentd: {}
 ```
+
 ```sh
 [root@services ~]# oc create -f cust-resource-def-logging.yaml
 clusterlogging.logging.openshift.io/instance created
 ```
+
 Wait a few moments and look for the Operator to rollout route, services, deployments, and pods:
 
 ```sh
