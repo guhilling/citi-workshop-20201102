@@ -45,7 +45,9 @@ To avoid typing on each etcdctl command the global options --cacert, --cert and 
 ```
 sh-4.2# export ETCDCTL_CACERT=/etc/ssl/etcd/ca.crt ETCDCTL_CERT=$(find /etc/ssl/ -name *peer*crt) ETCDCTL_KEY=$(find /etc/ssl/ -name *peer*key)
 ```
-
+```
+sh-4.2# export ETCDCTL_ENDPOINTS=$(etcdctl member list|cut -d',' -f5|cut -d ' ' -f2|awk 'ORS=","'| head -c -1)
+```
 `If the etcdctl command expects the list of cluster members add the option --cluster`
 
 #### Get the etcd member list
