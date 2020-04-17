@@ -180,7 +180,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: prometheus-k8s
-namespace: openshift-operators-redhat
+  namespace: openshift-operators-redhat
 ```
 
 ```sh
