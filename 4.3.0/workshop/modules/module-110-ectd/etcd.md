@@ -695,9 +695,9 @@ project.project.openshift.io "backup-test" deleted
 
 #### etcd restore the backup the OpenShift way
 
-Let's recover the etcd state befor we deleted the project backup-test
+Let's recover the etcd state before we deleted the project backup-test
 
-First we have to copy out backup to all three masters
+First we have to copy our backup to all three masters
 ```
 
 ```
