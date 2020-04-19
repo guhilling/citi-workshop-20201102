@@ -21,8 +21,7 @@ ETCDCTL_API=3
 
 #### Set the etcdctl environment variables
 
-`In OpenShift 4.x the certificates for the etcd servers are now located in the directory /etc/ssl/etcd/!`
-
+> In OpenShift 4.x the certificates for the etcd servers are now located in the directory /etc/ssl/etcd/!
 
 ```
 sh-4.2# ls -lisa /etc/ssl/etcd
@@ -415,6 +414,7 @@ type: Opaque
 ```
 ```
 [root@services ~]# echo "bXlkYXRh"|base64 -d
+mydata
 ```
 We'll see the secret isn't encrypted, therefor only the etcd datastore is encrypted
 #### Unencrypt etcd
