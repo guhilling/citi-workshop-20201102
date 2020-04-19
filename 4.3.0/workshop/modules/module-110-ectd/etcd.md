@@ -45,10 +45,12 @@ To avoid typing on each etcdctl command the global options --cacert, --cert and 
 ```
 sh-4.2# export ETCDCTL_CACERT=/etc/ssl/etcd/ca.crt ETCDCTL_CERT=$(find /etc/ssl/ -name *peer*crt) ETCDCTL_KEY=$(find /etc/ssl/ -name *peer*key)
 ```
+
+Same is for the global environment variable ETCDCTL_ENDPOINTS
 ```
 sh-4.2# export ETCDCTL_ENDPOINTS=$(etcdctl member list|cut -d',' -f5|cut -d ' ' -f2|awk 'ORS=","'| head -c -1)
 ```
-`If the etcdctl command expects the list of cluster members add the option --cluster`
+> If the etcdctl command expects the list of cluster members the global environment variable is used if the variable isn't set add the option --cluster
 
 #### Get the etcd member list
 
@@ -200,14 +202,14 @@ sh-4.2# etcdctl defrag
 Finished defragmenting etcd member[127.0.0.1:2379]
 ```
 
-**Note that defragmentation to a live member blocks the system from reading and writing data while rebuilding its states**.
+> **Note that defragmentation to a live member blocks the system from reading and writing data while rebuilding its states**.
 
-**Note that defragmentation request does not get replicated over cluster. That is, the request is only applied to the local node. Specify all members in --endpoints flag.**
+> **Note that defragmentation request does not get replicated over cluster. That is, the request is only applied to the local node. Specify all members in --endpoints flag or define the global environment variable ETCDCTL_ENDPOINTS**
 
 Run defragment operations for all endpoints in the cluster associated with the default endpoint:
 
 ```
-sh-4.2# etcdctl defrag --endpoints=https://etcd-0.ocp4.h12.rhaw.io:2379,https://etcd-1.ocp4.h12.rhaw.io:2379,https://etcd-2.ocp4.h12.rhaw.io:2379          
+sh-4.2# etcdctl defrag          
 Finished defragmenting etcd member[https://etcd-0.ocp4.h12.rhaw.io:2379]
 Finished defragmenting etcd member[https://etcd-1.ocp4.h12.rhaw.io:2379]
 Finished defragmenting etcd member[https://etcd-2.ocp4.h12.rhaw.io:2379]
@@ -263,7 +265,7 @@ PASS
 
 ### Moving the etcd cluster leadership
 
-MOVE-LEADER transfers leadership from the leader to another member in the cluster.
+MOVE-LEADER transfers leadership from the leader to another member in the cluster. This is usefull if you have to replace the etcd node which is the current leader.
 
 Check who is the current leader
 
@@ -277,7 +279,7 @@ sh-4.2# etcdctl endpoint status --cluster -w table
 | https://192.168.100.21:2379 | d241e2cf814e2ec1 |  3.3.17 |   37 MB |     false |        12 |   15776619 |
 +-----------------------------+------------------+---------+---------+-----------+-----------+------------+
 ```
-The current leader is https://192.168.100.23 (is leader true)
+The current leader is https://192.168.100.23 (IS LEADER true)
 Let's move the leadership to https://192.168.100.21
 
 We have to use for the leader the endpoint of the leader (https://192.168.100.23:2379) and for the new leader the hex ID of the member (d241e2cf814e2ec1)
@@ -307,14 +309,59 @@ The current leader is now https://192.168.100.21
 ## etcd encryption
 
 #### Encrypt etcd
+To verify the encryption we'll set up a secret first
+```
+[root@services ~]# oc create secret generic secret1 -n default --from-literal=mykey=mydata
+secret/secret1 created
+```
+Let's take a look how it looks like  on oc  cmdline
+```
+[root@services ~]# oc get secret secret1 -n default -o yaml
+apiVersion: v1
+data:
+  mykey: bXlkYXRh
+kind: Secret
+metadata:
+  creationTimestamp: "2020-04-14T15:40:37Z"
+  name: secret1
+  namespace: default
+  resourceVersion: "6022851"
+  selfLink: /api/v1/namespaces/default/secrets/secret1
+  uid: dd31f75e-e0af-4974-8f31-15e6c993d11d
+type: Opaque
+```
+Decode the value (bXlkYXRh)
+```
+[root@services ~]# echo "bXlkYXRh"|base64 -d
+mydata
+```
+Let's take a look how it looks like on the datastore inside etcd
+```
+sh-4.2# etcdctl get /kubernetes.io/secrets/default/secret1| hexdump -C
+00000000  2f 6b 75 62 65 72 6e 65  74 65 73 2e 69 6f 2f 73  |/kubernetes.io/s|
+00000010  65 63 72 65 74 73 2f 64  65 66 61 75 6c 74 2f 73  |ecrets/default/s|
+00000020  65 63 72 65 74 31 0a 6b  38 73 00 0a 0c 0a 02 76  |ecret1.k8s.....v|
+00000030  31 12 06 53 65 63 72 65  74 12 67 0a 4c 0a 07 73  |1..Secret.g.L..s|
+00000040  65 63 72 65 74 31 12 00  1a 07 64 65 66 61 75 6c  |ecret1....defaul|
+00000050  74 22 00 2a 24 64 64 33  31 66 37 35 65 2d 65 30  |t".*$dd31f75e-e0|
+00000060  61 66 2d 34 39 37 34 2d  38 66 33 31 2d 31 35 65  |af-4974-8f31-15e|
+00000070  36 63 39 39 33 64 31 31  64 32 00 38 00 42 08 08  |6c993d11d2.8.B..|
+00000080  f5 b2 d7 f4 05 10 00 7a  00 12 0f 0a 05 6d 79 6b  |.......z.....myk|
+00000090  65 79 12 06 6d 79 64 61  74 61 1a 06 4f 70 61 71  |ey..mydata..Opaq|
+000000a0  75 65 1a 00 22 00 0a                              |ue.."..|
+000000a7
+```
+At the end you'll see the key (mykey) and the value (mydata) of the secret
 
-Modify the API server object and set the encryption field type to aescbc:
+
+Modify the API server object and set the encryption field type to aescbc
 
 ```
 [root@services ~]# oc patch apiservers.config.openshift.io cluster --type=merge -p '{"spec": {"encryption": {"type": "aescbc"}}}'
 ```
+The encryption wil start and it will take a while ... wait until the encryption process is completed
 
-Review the Encrypted status condition for the OpenShift API server to verify that its resources were successfully encrypted
+Review the encrypted status condition for the OpenShift API server to verify that its resources were successfully encrypted
 
 ```
 [root@services ~]# oc get openshiftapiserver -o=jsonpath='{range .items[0].status.conditions[?(@.type=="Encrypted")]}{.reason}{"\n"}{.message}{"\n"}'
@@ -330,6 +377,46 @@ EncryptionCompleted
 All resources encrypted: secrets, configmaps
 ```
 
+Check now the etcd entry of the secret
+```
+sh-4.2# etcdctl get /kubernetes.io/secrets/default/secret1| hexdump -C
+00000000  2f 6b 75 62 65 72 6e 65  74 65 73 2e 69 6f 2f 73  |/kubernetes.io/s|
+00000010  65 63 72 65 74 73 2f 64  65 66 61 75 6c 74 2f 73  |ecrets/default/s|
+00000020  65 63 72 65 74 31 0a 6b  38 73 3a 65 6e 63 3a 61  |ecret1.k8s:enc:a|
+00000030  65 73 63 62 63 3a 76 31  3a 31 3a e0 ad cb 5b f4  |escbc:v1:1:...[.|
+00000040  be 1d 7e b9 84 e7 8f d7  43 b5 66 a8 7c dd 51 89  |..~.....C.f.|.Q.|
+00000050  41 07 b2 6e 5e 0e 93 3e  db 0b 39 11 38 98 4c 62  |A..n^..>..9.8.Lb|
+00000060  7a d0 d5 02 d2 c0 9e 70  8d 96 5d 17 d4 d4 4a f9  |z......p..]...J.|
+00000070  96 52 e2 8a ec c2 90 64  f7 9c 9d 27 57 38 37 5f  |.R.....d...'W87_|
+00000080  11 7e 84 7d 6d 02 8a 5f  24 35 76 44 be 32 55 96  |.~.}m.._$5vD.2U.|
+00000090  31 bb ae bd b3 73 5f 5d  8e b3 2f fc 26 ab a5 a3  |1....s_]../.&...|
+000000a0  84 2b a3 8a 92 d5 cb bb  e9 39 6c 4e 9d df 06 b7  |.+.......9lN....|
+000000b0  b3 aa ac ec b8 76 b3 f4  40 1a 15 51 44 e7 4c d5  |.....v..@..QD.L.|
+000000c0  e7 50 a3 e4 3e 84 35 ab  ee 1e cc 0a              |.P..>.5.....|
+000000cc
+```
+We'll see that the enrty is now encrypted
+
+Check the secret with the oc command line
+```
+[root@services ~]# oc get secret secret1 -n default -o yaml
+apiVersion: v1
+data:
+  mykey: bXlkYXRh
+kind: Secret
+metadata:
+  creationTimestamp: "2020-04-14T15:40:37Z"
+  name: secret1
+  namespace: default
+  resourceVersion: "6022851"
+  selfLink: /api/v1/namespaces/default/secrets/secret1
+  uid: dd31f75e-e0af-4974-8f31-15e6c993d11d
+type: Opaque
+```
+```
+[root@services ~]# echo "bXlkYXRh"|base64 -d
+```
+We'll see the secret isn't encrypted, therefor only the etcd datastore is encrypted
 #### Unencrypt etcd
 
 Modify the API server object and set the encryption field type to identity:
@@ -353,16 +440,272 @@ Review the Encrypted status condition for the Kubernetes API server to verify th
 DecryptionCompleted
 Encryption mode set to identity and everything is decrypted
 ```
+Let's take a look how it looks like on the datastore inside etcd
+```
+sh-4.2# etcdctl get /kubernetes.io/secrets/default/secret1| hexdump -C
+00000000  2f 6b 75 62 65 72 6e 65  74 65 73 2e 69 6f 2f 73  |/kubernetes.io/s|
+00000010  65 63 72 65 74 73 2f 64  65 66 61 75 6c 74 2f 73  |ecrets/default/s|
+00000020  65 63 72 65 74 31 0a 6b  38 73 00 0a 0c 0a 02 76  |ecret1.k8s.....v|
+00000030  31 12 06 53 65 63 72 65  74 12 67 0a 4c 0a 07 73  |1..Secret.g.L..s|
+00000040  65 63 72 65 74 31 12 00  1a 07 64 65 66 61 75 6c  |ecret1....defaul|
+00000050  74 22 00 2a 24 64 64 33  31 66 37 35 65 2d 65 30  |t".*$dd31f75e-e0|
+00000060  61 66 2d 34 39 37 34 2d  38 66 33 31 2d 31 35 65  |af-4974-8f31-15e|
+00000070  36 63 39 39 33 64 31 31  64 32 00 38 00 42 08 08  |6c993d11d2.8.B..|
+00000080  f5 b2 d7 f4 05 10 00 7a  00 12 0f 0a 05 6d 79 6b  |.......z.....myk|
+00000090  65 79 12 06 6d 79 64 61  74 61 1a 06 4f 70 61 71  |ey..mydata..Opaq|
+000000a0  75 65 1a 00 22 00 0a                              |ue.."..|
+000000a7
+```
+We'll see the etcd datastore is not encrypted anymore
+
+Delete the secret secret1 to keep etcd and your OpenShift clean
+```
+[root@services ~]# oc delete secret secret1 -n default
+secret "secret1" deleted
+```
+
 
 ## etcd backup
 
+Create a new project backup-test
+```
+[root@services ~]# oc new-project backup-test
+Now using project "backup-test" on server "https://api.ocp4.h1.rhaw.io:6443".
+
+You can add applications to this project with the 'new-app' command. For example, try:
+
+    oc new-app django-psql-example
+
+to build a new example application in Python. Or use kubectl to deploy a simple Kubernetes application:
+
+    kubectl create deployment hello-node --image=gcr.io/hello-minikube-zero-install/hello-node
+```
 
 #### etcd backup the OpenShift way
 
-SSH to any of the master host with a root/privileged user.
-Run the etcd-snapshot-backup.sh by using the following command:
+> You should only save a backup from a single master host. You do not need a backup from each master host in the cluster.
+
+SSH to any of the master host with the user `core`.
 ```
-sudo /usr/local/bin/etcd-snapshot-backup.sh </path-to-directory>
+[root@services ~]# ssh core@master03.ocp4.h1.rhaw.io
+The authenticity of host 'master03.ocp4.h1.rhaw.io (192.168.100.23)' can't be established.
+ECDSA key fingerprint is SHA256:5qwHuyme0ACHc8XeG9LO9ZGVw3ePcK2M3L5F5vE6OxE.
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added 'master03.ocp4.h1.rhaw.io,192.168.100.23' (ECDSA) to the list of known hosts.
+Red Hat Enterprise Linux CoreOS 43.81.202001142154.0
+  Part of OpenShift 4.3, RHCOS is a Kubernetes native operating system
+  managed by the Machine Config Operator (`clusteroperator/machine-config`).
+
+WARNING: Direct SSH access to machines is not recommended; instead,
+make configuration changes via `machineconfig` objects:
+  https://docs.openshift.com/container-platform/4.3/architecture/architecture-rhcos.html
+
+---
+```
+
+> **`From version 4.3.9  the backup procedure has changed!`**
+
+Run the etcd-snapshot-backup.sh script as shown below:
+```
+[core@master01 ~]$ sudo /usr/local/bin/etcd-snapshot-backup.sh ./assets/backup
+Creating asset directory ./assets
+e9aa2d19b0fcfe07d3600beab6ee275f7f67cbabdb2da1e251ff72b60e26c7e5
+etcdctl version: 3.3.17
+API version: 3.3
+Trying to backup etcd client certs..
+etcd client certs found in /etc/kubernetes/static-pod-resources/kube-apiserver-pod-9 backing up to ./assets/backup/
+Backing up /etc/kubernetes/manifests/etcd-member.yaml to ./assets/backup/
+Trying to backup latest static pod resources..
+{"level":"warn","ts":"2020-04-17T17:09:29.264Z","caller":"clientv3/retry_interceptor.go:116","msg":"retry stream intercept"}
+Snapshot saved at ./assets/backup/snapshot_2020-04-17_170928.db
+snapshot db and kube resources are successfully saved to ./assets/backup!
 ```
 
 
+The new created directory assets looks like this:
+```
+[root@services ~]# tree assets
+assets
+├── backup
+│   ├── etcd-ca-bundle.crt
+│   ├── etcd-client.crt
+│   ├── etcd-client.key
+│   ├── etcd-member.yaml
+│   ├── snapshot_2020-04-17_170127.db
+│   └── static_kuberesources_2020-04-17_170127.tar.gz
+├── bin
+│   └── etcdctl
+├── manifests
+├── restore
+├── shared
+├── templates
+└── tmp
+
+7 directories, 7 files
+```
+
+To presewrve all permissions on the files tar it and store it on a safe place
+```
+[core@master01 ~]$ sudo tar cvzf backup-$(date +%Y-%m-%d).tar.gz assets/backup
+assets/backup/
+assets/backup/etcd-ca-bundle.crt
+assets/backup/etcd-client.crt
+assets/backup/etcd-client.key
+assets/backup/etcd-member.yaml
+assets/backup/static_kuberesources_2020-04-17_170928.tar.gz
+assets/backup/snapshot_2020-04-17_170928.db
+```
+
+<!--
+OLD ETCD PROCEDURE BEFORE 4.3.9 !!!
+```
+[core@master03 ~]$ sudo /usr/local/bin/etcd-snapshot-backup.sh ./assets/backup
+Creating asset directory ./assets
+Downloading etcdctl binary..
+etcdctl version: 3.3.17
+API version: 3.3
+Trying to backup etcd client certs..
+etcd client certs found in /etc/kubernetes/static-pod-resources/kube-apiserver-pod-13 backing up to ./assets/backup/
+Backing up /etc/kubernetes/manifests/etcd-member.yaml to ./assets/backup/
+Trying to backup latest static pod resources..
+{"level":"warn","ts":"2020-04-15T09:20:33.671Z","caller":"clientv3/retry_interceptor.go:116","msg":"retry stream intercept"}
+Snapshot saved at ./assets/tmp/snapshot.db
+snapshot db and kube resources are successfully saved to ./assets/backup/snapshot_db_kuberesources_2020-04-15_092032.tar.gz!
+```
+The resulting directory assets looks like this
+```
+tree assets/
+assets/
+├── backup
+│   ├── etcd-ca-bundle.crt
+│   ├── etcd-member.yaml
+│   └── snapshot_db_kuberesources_2020-04-15_092032.tar.gz
+├── bin
+│   └── etcdctl
+├── manifests
+├── restore
+├── shared
+│   ├── Documentation
+│   │   ├── benchmarks
+│   │   │   ├── etcd-2-1-0-alpha-benchmarks.md
+│   │   │   ├── etcd-2-2-0-benchmarks.md
+│   │   │   ├── etcd-2-2-0-rc-benchmarks.md
+│   │   │   ├── etcd-2-2-0-rc-memory-benchmarks.md
+│   │   │   ├── etcd-3-demo-benchmarks.md
+│   │   │   ├── etcd-3-watch-memory-benchmark.md
+│   │   │   ├── etcd-storage-memory-benchmark.md
+│   │   │   └── _index.md
+│   │   ├── branch_management.md
+│   │   ├── demo.md
+│   │   ├── dev-guide
+│   │   │   ├── api_concurrency_reference_v3.md
+│   │   │   ├── api_grpc_gateway.md
+│   │   │   ├── api_reference_v3.md
+│   │   │   ├── apispec
+│   │   │   │   └── swagger
+│   │   │   │       ├── rpc.swagger.json
+│   │   │   │       ├── v3election.swagger.json
+│   │   │   │       └── v3lock.swagger.json
+│   │   │   ├── experimental_apis.md
+│   │   │   ├── grpc_naming.md
+│   │   │   ├── _index.md
+│   │   │   ├── interacting_v3.md
+│   │   │   ├── limit.md
+│   │   │   └── local_cluster.md
+│   │   ├── dev-internal
+│   │   │   ├── discovery_protocol.md
+│   │   │   ├── logging.md
+│   │   │   └── release.md
+│   │   ├── dl_build.md
+│   │   ├── faq.md
+│   │   ├── _index.md
+│   │   ├── integrations.md
+│   │   ├── learning
+│   │   │   ├── api_guarantees.md
+│   │   │   ├── api.md
+│   │   │   ├── auth_design.md
+│   │   │   ├── client-architecture.md
+│   │   │   ├── client-feature-matrix.md
+│   │   │   ├── data_model.md
+│   │   │   ├── glossary.md
+│   │   │   ├── _index.md
+│   │   │   ├── learner.md
+│   │   │   └── why.md
+│   │   ├── metrics.md
+│   │   ├── op-guide
+│   │   │   ├── authentication.md
+│   │   │   ├── clustering.md
+│   │   │   ├── configuration.md
+│   │   │   ├── container.md
+│   │   │   ├── etcd3_alert.rules
+│   │   │   ├── etcd3_alert.rules.yml
+│   │   │   ├── etcd-sample-grafana.png
+│   │   │   ├── failures.md
+│   │   │   ├── gateway.md
+│   │   │   ├── grafana.json
+│   │   │   ├── grpc_proxy.md
+│   │   │   ├── hardware.md
+│   │   │   ├── _index.md
+│   │   │   ├── maintenance.md
+│   │   │   ├── monitoring.md
+│   │   │   ├── performance.md
+│   │   │   ├── recovery.md
+│   │   │   ├── runtime-configuration.md
+│   │   │   ├── runtime-reconf-design.md
+│   │   │   ├── security.md
+│   │   │   ├── supported-platform.md
+│   │   │   ├── v2-migration.md
+│   │   │   └── versioning.md
+│   │   ├── platforms
+│   │   │   ├── aws.md
+│   │   │   ├── container-linux-systemd.md
+│   │   │   ├── freebsd.md
+│   │   │   └── _index.md
+│   │   ├── production-users.md
+│   │   ├── README.md -> docs.md
+│   │   ├── reporting_bugs.md
+│   │   ├── rfc
+│   │   │   └── _index.md
+│   │   ├── tuning.md
+│   │   └── upgrades
+│   │       ├── _index.md
+│   │       ├── upgrade_3_0.md
+│   │       ├── upgrade_3_1.md
+│   │       ├── upgrade_3_2.md
+│   │       ├── upgrade_3_3.md
+│   │       ├── upgrade_3_5.md
+│   │       └── upgrading-etcd.md
+│   ├── README-etcdctl.md
+│   ├── README.md
+│   └── READMEv2-etcdctl.md
+├── templates
+└── tmp
+    └── etcd-v3.3.17-linux-amd64.tar.gz
+```
+-->
+
+
+
+
+Delete the project backup-test
+```
+[root@services ~]# oc delete project backup-test 
+project.project.openshift.io "backup-test" deleted
+```
+
+#### etcd restore the backup the OpenShift way
+
+Let's recover the etcd state befor we deleted the project backup-test
+
+First we have to copy out backup to all three masters
+```
+
+```
+
+Than login to all three masters and run the recovery procedure simultaniously (tmux is perfect for this task)
+
+> Hint: open a tmux session, split the window into three panes, login to one master on each pane, syncronize the panes and run the recovery procedure)
+
+```
+
+```
