@@ -544,7 +544,7 @@ assets
 7 directories, 7 files
 ```
 
-To presewrve all permissions on the files tar it and store it on a safe place
+To preserve all permissions on the files tar it and store it on a safe place
 ```
 [core@master01 ~]$ sudo tar cvzf backup-$(date +%Y-%m-%d).tar.gz assets/backup
 assets/backup/
