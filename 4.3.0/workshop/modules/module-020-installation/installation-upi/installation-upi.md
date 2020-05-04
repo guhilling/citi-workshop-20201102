@@ -53,12 +53,17 @@ So after 10 - 15 minutes we need to power off all of these nodes:
 First we need to list all vm's:
 
 ```
-[root@hypervisor ~]# virsh list --all
-```
-
-```
--    bootstrap.hX.rhaw.io   running-    services.hX.rhaw.io    running-    master01.hX.rhaw.io    running-    master02.hX.rhaw.io    running-    master03.hX.rhaw.io    running-    worker01.hX.rhaw.io    running-    worker02.hX.rhaw.io    running
-```
+[root@h12 ~]# virsh list --all
+ Id    Name                           State
+----------------------------------------------------
+ 1     services.h12.rhaw.io           running
+ -     bootstrap.hX.rhaw.io           shut off
+ -     master01.hX.rhaw.io            shut off
+ -     master02.hX.rhaw.io            shut off
+ -     master03.hX.rhaw.io            shut off
+ -     worker01.hX.rhaw.io            shut off
+ -     worker02.hX.rhaw.io            shut off
+ ```
 
 Now we need to poweroff all running machines:
 
@@ -121,7 +126,7 @@ Now we can power on all our virtual machines with the command:
 You can observe the installation process if you access the bootstrap node from your service machine with the command:
 
 ```
-[root@hypervisor ~]# ssh core@bootstrap.ocp4.hX.rhaw.io
+[root@services ~]# ssh core@bootstrap.ocp4.hX.rhaw.io
 ```
 
 After done this there is during the installation process a way of executing a journalctl command to observe this process.
