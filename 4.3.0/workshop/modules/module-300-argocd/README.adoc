@@ -57,6 +57,7 @@ argocds                            argoproj.io   true         ArgoCD
 * ArgoCDExport: describes the export of an ArgoCD resource (name of ArgoCD, schedule, storage)
 
 Links:
+
 * ArgoCD: https://argocd-operator.readthedocs.io/en/latest/reference/argocd/
 * ArgoCDExport: https://argocd-operator.readthedocs.io/en/latest/reference/argocdexport/
 * AppProject: https://argoproj.github.io/argo-cd/operator-manual/declarative-setup/#projects
@@ -66,6 +67,7 @@ Links:
 == What has been created
 
 The respective resources have been created which implement the following architecture:
+
 image::images/argocd_architecture.png[]
 
 On top of that we deployed https://github.com/dexidp/dex[dex] server, since we configured the OpenShift oauth integration. Dex is an identity service which uses OIDC. The operator configured everything for us, we just had to define
