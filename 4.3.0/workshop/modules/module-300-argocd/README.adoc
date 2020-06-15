@@ -28,6 +28,15 @@ This will:
 * deploy the ArgoCD operator in this project
 * create a sample argocd deployment integrated with the OpenShift OAuth server
 
+If you are not the kubeadmin right now, you could either:
+a) quick and dirty add your user to the clusterrolebinding cluster-admins
+b) create a new group, e.g. argo-admins, add your user to this group and then modify the file deploy/3_argocd.yaml to include this new group:
+```
+    policy: |
+      g, system:cluster-admins, role:admin
+      g, argo-admins, role:admin
+```
+
 Cluster admins will be admins, anyone else will just have read-only access.
 
 == Operator
