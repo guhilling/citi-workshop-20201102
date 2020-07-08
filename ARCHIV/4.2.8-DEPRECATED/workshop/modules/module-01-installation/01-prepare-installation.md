@@ -213,15 +213,15 @@ menu title **** OpenShift 4 PXE Boot Menu ****
 
 label bootstrap
  kernel /openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-kernel
- append ip=dhcp rd.neednet=1 coreos.inst.install_dev=vda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.2.0/images/rhcos-4.2.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.2.0/ignitions/bootstrap.ign initrd=/openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-initramfs.img
+ append ip=dhcp rd.neednet=1 coreos.inst.install_dev=sda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.2.0/images/rhcos-4.2.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.2.0/ignitions/bootstrap.ign initrd=/openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-initramfs.img
 
 label master
  kernel /openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-kernel
- append ip=dhcp rd.neednet=1 coreos.inst.install_dev=vda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.2.0/images/rhcos-4.2.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.2.0/ignitions/master.ign initrd=/openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-initramfs.img
+ append ip=dhcp rd.neednet=1 coreos.inst.install_dev=sda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.2.0/images/rhcos-4.2.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.2.0/ignitions/master.ign initrd=/openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-initramfs.img
 
 label worker
  kernel /openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-kernel
- append ip=dhcp rd.neednet=1 coreos.inst.install_dev=vda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.2.0/images/rhcos-4.2.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.2.0/ignitions/worker.ign initrd=/openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-initramfs.img
+ append ip=dhcp rd.neednet=1 coreos.inst.install_dev=sda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.2.0/images/rhcos-4.2.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.2.0/ignitions/worker.ign initrd=/openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-initramfs.img
 ```
 
 > Important: Please adjust the IP address to the ip address of your environment
@@ -250,7 +250,7 @@ prompt 0
 timeout 30
 label bootstrap
  kernel /openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-kernel
- append ip=dhcp rd.neednet=1 coreos.inst.install_dev=vda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.2.0/images/rhcos-4.2.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.2.0/ignitions/bootstrap.ign initrd=/openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-initramfs.img
+ append ip=dhcp rd.neednet=1 coreos.inst.install_dev=sda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.2.0/images/rhcos-4.2.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.2.0/ignitions/bootstrap.ign initrd=/openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-initramfs.img
 ```
 
 The file for each master  node needs to be:
@@ -261,7 +261,7 @@ prompt 0
 timeout 30
 label master
  kernel /openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-kernel
- append ip=dhcp rd.neednet=1 coreos.inst.install_dev=vda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.2.0/images/rhcos-4.2.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.2.0/ignitions/master.ign initrd=/openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-initramfs.img
+ append ip=dhcp rd.neednet=1 coreos.inst.install_dev=sda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.2.0/images/rhcos-4.2.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.2.0/ignitions/master.ign initrd=/openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-initramfs.img
 ```
 
 The file for each worker node needs to be:
@@ -272,7 +272,7 @@ prompt 0
 timeout 30
 label worker
  kernel /openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-kernel
- append ip=dhcp rd.neednet=1 coreos.inst.install_dev=vda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.2.0/images/rhcos-4.2.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.2.0/ignitions/worker.ign initrd=/openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-initramfs.img
+ append ip=dhcp rd.neednet=1 coreos.inst.install_dev=sda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.2.0/images/rhcos-4.2.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.2.0/ignitions/worker.ign initrd=/openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-initramfs.img
 ```
 
 > Each of the files we now create needs to have a 01- in front and then the MAC Address of each node seperated with a dash!!!

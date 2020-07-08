@@ -85,9 +85,9 @@ spec:
 
 - Enter the following information:
 
-  * First name: Devday
+  * First name: Desday
   * Last name: User01
-  * Email: any_email@devday.com
+  * Email: any_email@desday.com
   * Username: *Username*
   * Password: openshift4
 
