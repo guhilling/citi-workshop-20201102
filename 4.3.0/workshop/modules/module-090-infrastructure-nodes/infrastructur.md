@@ -176,7 +176,7 @@ Now we are done, we have seperated worker from infra nodes in our Openshift Clus
 If you want to have different configurations on infra nodes and worker nodes e.g. on the network device settings you have to define also a new "worker" pool, that's call it "compute".
 ```sh
 [root@services ~]# vim /root/openshift/machineconfiguration/compute-machineconfigpool.yaml
-
+```
 ```yaml
 ---
 apiVersion: machineconfiguration.openshift.io/v1
