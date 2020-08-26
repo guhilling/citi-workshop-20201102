@@ -530,3 +530,172 @@ Using WebUI, Create a Noobaa backing store named "noobaa-default-backing-store" 
 
 
 
+## Extend OCS by Additional Volumes
+
+Documentation Link: [](https://access.redhat.com/documentation/en-us/red_hat_openshift_container_storage/4.4/html-single/managing_openshift_container_storage/index#scaling-up-storage-by-adding-capacity-to-your-openshift-container-storage-nodes-using-local-storage-devices_rhocs)
+
+### Add additional Disks to the Nodes
+
+We already added an additional to each of the storage nodes when preparing the infrastructure for this lab. In a real-world scenario you would need to:
+
+* prepare the disks
+* put node into maintenance (cordon and drain the node)
+* shutdown the node
+* add disk to node (physically or on VM level)
+* restart the node
+* put node out of maintenance mode (uncordon node)
+
+This would to be followed for each storage node one after another.
+
+>> TODO - check if there are any special procedures to get OCS nodes into maintenance
+>> 
+
+### Add additional Disks using Local Storage Operator
+
+Using Local Storage Operator setup, add the additional disks to the Local Storage Operator.
+
+Update 'localvolume-ocs.yaml' and add the '/dev/vdc' disk we prepared.
+
+```yaml
+---
+apiVersion: local.storage.openshift.io/v1
+kind: LocalVolume
+metadata:
+  name: ocs-localblockvolume
+  namespace: local-storage
+spec:
+  nodeSelector:
+    nodeSelectorTerms:
+    - matchExpressions:
+      - key: cluster.ocs.openshift.io/openshift-storage
+        operator: In
+        values:
+        - ""
+  storageClassDevices:
+  - storageClassName: ocs-localblock
+    volumeMode: Block
+    devicePaths:
+          - /dev/vdb
+          - /dev/vdc
+...
+```
+
+Apply the file using 'oc apply':
+
+```shell
+oc apply -f localvolume-ocs.yaml
+```
+
+and wait for the pods managing the disks to appear. 2 Pods per device will be available.
+
+```shell
+oc get pods -n local-storage
+```
+
+Run as well the following commands:
+
+```shell
+oc get pv
+oc get sc
+```
+
+There should be a StorageClass 'ocs-localblock' and 3 PVs 'local-pv-....' for that StorageClass being created.
+
+### Extend the OCS Storage Cluster
+
+#### Extend with same-sized storage
+
+If the added disks are same size as the original disks used for the storage cluster, simple incrase the 'StorageCluster.spec.storageDeviceSet.count' to '2' in the existing storage cluster definition and apply the changes. 
+
+Example (not the 'count: 2' line):
+
+```yaml
+---
+apiVersion: ocs.openshift.io/v1
+kind: StorageCluster
+metadata:
+  name: ocs-storagecluster
+  namespace: openshift-storage
+spec:
+  manageNodes: false
+  monDataDirHostPath: /var/lib/rook
+  storageDeviceSets:
+  - count: 2
+    dataPVCTemplate:
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: <SIZE-FOR-OSD>Gi
+        storageClassName: ocs-localblock
+        volumeMode: Block
+    name: ocs-deviceset
+    placement: {}
+    portable: false
+    replica: 3
+    resources: {}
+...
+```
+
+#### Extend with different-sized storage
+
+In case the storage size of the new disks is different, use another approach.
+Extend existing 'storage-cluster.yaml':
+* add another 'storageDeviceSet' similar to the existing
+* give the device set a new name (here: 'ocs-deviceset2')
+* define the storage size definition of the new disks
+* keep storage class name
+
+```yaml
+---
+apiVersion: ocs.openshift.io/v1
+kind: StorageCluster
+metadata:
+  name: ocs-storagecluster
+  namespace: openshift-storage
+spec:
+  manageNodes: false
+  monDataDirHostPath: /var/lib/rook
+  storageDeviceSets:
+  - count: 1
+    dataPVCTemplate:
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 100Gi
+        storageClassName: ocs-localblock
+        volumeMode: Block
+    name: ocs-deviceset
+    placement: {}
+    portable: false
+    replica: 3
+    resources: {}
+  - count: 1
+    dataPVCTemplate:
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 50Gi
+        storageClassName: ocs-localblock
+        volumeMode: Block
+    name: ocs-deviceset2
+    placement: {}
+    portable: false
+    replica: 3
+    resources: {}
+...
+```
+
+Now apply the storage cluster Yaml file
+
+```shell
+oc replace -f storage-cluster.yaml
+```
+
+Wait for OCS Operator to consume the changed configuration and rollout the extended storage.
+
