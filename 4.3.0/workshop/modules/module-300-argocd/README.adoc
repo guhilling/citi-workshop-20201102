@@ -97,7 +97,7 @@ The following example is based on a very simple application to provide an overvi
 == Preparation
 
 1. Fork the repo https://github.com/jeichler/argocd-kustomize-minisample
-2. adjust the file `app/2_project.yaml` to point to your repo
+2. adjust the file `app/1_aplication.yaml` to point to your repo
 
 === Optional: Webhook
 Create a webhook for your argocd (https://argoproj.github.io/argo-cd/operator-manual/webhook/) - in this example we dont to keep it as portable as possible so we fall back to the default ArgoCD sync which happens every 3 minutes.

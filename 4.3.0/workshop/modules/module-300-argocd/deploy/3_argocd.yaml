@@ -2,6 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: ArgoCD
 metadata:
   name: simple-oauth
+  namespace: argocd
   labels:
     example: oauth
 spec:
@@ -15,4 +16,5 @@ spec:
       g, system:cluster-admins, role:admin
     scopes: '[groups]'
   server:
-    route: true
+    route:
+      enabled: true
