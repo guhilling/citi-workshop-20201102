@@ -32,6 +32,8 @@ Comment out the two lines below in /etc/named.conf:
 [root@bastion ~]# vim /etc/named.conf
 ```
 
+
+
 ```
 #listen-on port 53 { 127.0.0.1; };
 #listen-on-v6 port 53 { ::1; };
@@ -78,7 +80,6 @@ $TTL     1D
                   IN  NS  dns.ocp4.hX.rhaw.io.
 dns.ocp4            IN  A   192.168.100.254
 bastion            IN CNAME dns.ocp4
-workstation            IN  A   192.168.100.253
 bootstrap.ocp4            IN  A   192.168.100.10
 master01.ocp4            IN  A   192.168.100.21
 master02.ocp4            IN  A   192.168.100.22
@@ -93,6 +94,9 @@ node01.ocp4            IN  A   192.168.100.31
 node02.ocp4            IN  A   192.168.100.32
 node03.ocp4            IN  A   192.168.100.33
 node04.ocp4            IN  A   192.168.100.34
+node05.ocp4            IN  A   192.168.100.35
+node06.ocp4            IN  A   192.168.100.36
+node07.ocp4            IN  A   192.168.100.37
 _etcd-server-ssl._tcp.ocp4    IN  SRV 0 10    2380 etcd-0.ocp4
 _etcd-server-ssl._tcp.ocp4      IN      SRV     0 10    2380 etcd-1.ocp4
 _etcd-server-ssl._tcp.ocp4      IN      SRV     0 10    2380 etcd-2.ocp4
@@ -175,15 +179,19 @@ ddns-update-style interim;
          option domain-search "hX.rhaw.io","ocp4.hX.rhaw.io";
          filename "pxelinux.0";
          next-server 192.168.100.254;
-         host bootstrap { hardware ethernet 52:54:00:e1:78:8a; fixed-address 192.168.100.10; option host-name "bootstrap"; }
-         host master01 { hardware ethernet 52:54:00:f1:86:29; fixed-address 192.168.100.21; option host-name "master01"; }
-         host master02 { hardware ethernet 52:54:00:af:63:f3; fixed-address 192.168.100.22; option host-name "master02"; }
-         host master03 { hardware ethernet 52:54:00:a9:98:dd; fixed-address 192.168.100.23; option host-name "master03"; }
-         host node01 { hardware ethernet 52:54:00:9f:95:87; fixed-address 192.168.100.31; option host-name "node01"; }
-         host node02 { hardware ethernet 52:54:00:c4:8f:50; fixed-address 192.168.100.32; option host-name "node02"; }
-         host node03 { hardware ethernet 52:54:00:fe:e5:e3; fixed-address 192.168.100.33; option host-name "node03"; }
-         host workstation { hardware ethernet 52:54:00:af:bb:59; fixed-address 192.168.100.253; option host-name "workstation"; }
-         host node04 { hardware ethernet 52:54:00:f1:79:58; fixed-address 192.168.100.34; option host-name "node04"; }
+         host bootstrap { hardware ethernet 52:54:00:e1:78:8a; fixed-address 192.168.100.10; option host-name "bootstrap.ocp4.hX.rhaw.io"; }
+         host master01 { hardware ethernet 52:54:00:f1:86:29; fixed-address 192.168.100.21; option host-name "master01.ocp4.hX.rhaw.io"; }
+         host master02 { hardware ethernet 52:54:00:af:63:f3; fixed-address 192.168.100.22; option host-name "master02.ocp4.hX.rhaw.io"; }
+         host master03 { hardware ethernet 52:54:00:a9:98:dd; fixed-address 192.168.100.23; option host-name "master03.ocp4.hX.rhaw.io"; }
+         host node01 { hardware ethernet 52:54:00:9f:95:87; fixed-address 192.168.100.31; option host-name "node01.ocp4.hX.rhaw.io"; }
+         host node02 { hardware ethernet 52:54:00:c4:8f:50; fixed-address 192.168.100.32; option host-name "node02.ocp4.hX.rhaw.io"; }
+         host node03 { hardware ethernet 52:54:00:fe:e5:e3; fixed-address 192.168.100.33; option host-name "node03.ocp4.hX.rhaw.io"; }
+         host node04 { hardware ethernet 52:54:00:f1:79:58; fixed-address 192.168.100.34; option host-name "node04.ocp4.hX.rhaw.io"; }
+         host node05 { hardware ethernet 52:54:00:f1:79:59; fixed-address 192.168.100.35; option host-name "node05.ocp4.hX.rhaw.io"; }
+         host node06 { hardware ethernet 52:54:00:f1:79:60; fixed-address 192.168.100.36; option host-name "node06.ocp4.hX.rhaw.io"; }
+         host node07 { hardware ethernet 52:54:00:f1:79:61; fixed-address 192.168.100.37; option host-name "node07.ocp4.hX.rhaw.io"; }
+         
+
 }
 ```
 
@@ -209,19 +217,19 @@ then we need to create the default file with the following content:
 default menu.c32
 prompt 0
 timeout 30
-menu title **** OpenShift 4 PXE Boot Menu ****
+menu title **** OpenShift 4.5 PXE Boot Menu ****
 
 label bootstrap
- kernel /openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-kernel
- append ip=dhcp rd.neednet=1 coreos.inst.install_dev=sda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.2.0/images/rhcos-4.2.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.2.0/ignitions/bootstrap.ign initrd=/openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-initramfs.img
+ kernel /openshift4/4.5.6/rhcos-4.5.6-x86_64-installer-kernel-x86_64
+ append ip=dhcp rd.neednet=1 coreos.inst.install_dev=sda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.5.6/images/rhcos-metal.x86_64.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.5.6/ignitions/bootstrap.ign initrd=/openshift4/4.5.6/rhcos-4.5.6-x86_64-installer-initramfs.img
 
 label master
- kernel /openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-kernel
- append ip=dhcp rd.neednet=1 coreos.inst.install_dev=sda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.2.0/images/rhcos-4.2.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.2.0/ignitions/master.ign initrd=/openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-initramfs.img
+ kernel /openshift4/4.5.6/rhcos-4.5.6-x86_64-installer-kernel-x86_64
+ append ip=dhcp rd.neednet=1 coreos.inst.install_dev=sda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.5.6/images/rhcos-metal.x86_64.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.5.6/ignitions/master.ign initrd=/openshift4/4.5.6/rhcos-4.5.6-x86_64-installer-initramfs.img
 
 label node
- kernel /openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-kernel
- append ip=dhcp rd.neednet=1 coreos.inst.install_dev=sda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.2.0/images/rhcos-4.2.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.2.0/ignitions/node.ign initrd=/openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-initramfs.img
+ kernel /openshift4/4.5.6/rhcos-4.5.6-x86_64-installer-kernel-x86_64
+ append ip=dhcp rd.neednet=1 coreos.inst.install_dev=sda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.5.6/images/rhcos-metal.x86_64.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.5.6/ignitions/node.ign initrd=/openshift4/4.5.6/rhcos-4.5.6-x86_64-installer-initramfs.img
 ```
 
 > Important: Please adjust the IP address to the ip address of your environment
@@ -249,8 +257,8 @@ default bootstrap
 prompt 0
 timeout 30
 label bootstrap
- kernel /openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-kernel
- append ip=dhcp rd.neednet=1 coreos.inst.install_dev=sda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.2.0/images/rhcos-4.2.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.2.0/ignitions/bootstrap.ign initrd=/openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-initramfs.img
+ kernel /openshift4/4.5.6/rhcos-4.5.6-x86_64-installer-kernel-x86_64
+ append ip=dhcp rd.neednet=1 coreos.inst.install_dev=sda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.5.6/images/rhcos-metal.x86_64.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.5.6/ignitions/bootstrap.ign initrd=/openshift4/4.5.6/rhcos-4.5.6-x86_64-installer-initramfs.img
 ```
 
 The file for each master  node needs to be:
@@ -260,8 +268,8 @@ default master
 prompt 0
 timeout 30
 label master
- kernel /openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-kernel
- append ip=dhcp rd.neednet=1 coreos.inst.install_dev=sda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.2.0/images/rhcos-4.2.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.2.0/ignitions/master.ign initrd=/openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-initramfs.img
+ kernel /openshift4/4.5.6/rhcos-4.5.6-x86_64-installer-kernel-x86_64
+ append ip=dhcp rd.neednet=1 coreos.inst.install_dev=sda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.5.6/images/rhcos-metal.x86_64.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.5.6/ignitions/master.ign initrd=/openshift4/4.5.6/rhcos-4.5.6-x86_64-installer-initramfs.img
 ```
 
 The file for each node node needs to be:
@@ -271,8 +279,8 @@ default node
 prompt 0
 timeout 30
 label node
- kernel /openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-kernel
- append ip=dhcp rd.neednet=1 coreos.inst.install_dev=sda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.2.0/images/rhcos-4.2.0-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.2.0/ignitions/node.ign initrd=/openshift4/4.2.0/rhcos-4.2.0-x86_64-installer-initramfs.img
+ kernel /openshift4/4.5.6/rhcos-4.5.6-x86_64-installer-kernel-x86_64
+ append ip=dhcp rd.neednet=1 coreos.inst.install_dev=sda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.5.6/images/rhcos-metal.x86_64.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.5.6/ignitions/node.ign initrd=/openshift4/4.5.6/rhcos-4.5.6-x86_64-installer-initramfs.img
 ```
 
 > Each of the files we now create needs to have a 01- in front and then the MAC Address of each node seperated with a dash!!!
@@ -318,25 +326,25 @@ After that we restart httpd that our changes taking place:
 Now we need to create a directory for hosting the kernel and initramfs for PXE boot:
 
 ```
-[root@bastion ~]# mkdir -p /var/lib/tftpboot/openshift4/4.2.0/
+[root@bastion ~]# mkdir -p /var/lib/tftpboot/openshift4/4.5.6/
 ```
 
 access this directory:
 
 ```
-[root@bastion ~]# cd /var/lib/tftpboot/openshift4/4.2.0/
+[root@bastion ~]# cd /var/lib/tftpboot/openshift4/4.5.6/
 ```
 
 and download the kernel file to this directory:
 
 ```
-[root@bastion ~]# wget https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.2/latest/rhcos-4.2.0-x86_64-installer-kernel
+[root@bastion ~]# wget https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.5/4.5.6/rhcos-4.5.6-x86_64-installer-kernel-x86_64
 ```
 
 Then the CoreOS Installer initramfs image:
 
 ```
-[root@bastion ~]# wget https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.2/latest/rhcos-4.2.0-x86_64-installer-initramfs.img
+[root@bastion ~]# wget https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.5/4.5.6/rhcos-4.5.6-x86_64-installer-initramfs.x86_64.img
 ```
 
 Now we ned to relabel the files for selinux:
@@ -348,15 +356,15 @@ Now we ned to relabel the files for selinux:
 Next we need to host the Red Hat Core OS metal BIOS image:
 
 ```
-[root@bastion ~]# mkdir -p /var/www/html/openshift4/4.2.0/images/
+[root@bastion ~]# mkdir -p /var/www/html/openshift4/4.5.6/images/
 ```
 
 ```
-[root@bastion ~]# cd  /var/www/html/openshift4/4.2.0/images/
+[root@bastion ~]# cd  /var/www/html/openshift4/4.5.6/images/
 ```
 
 ```
-[root@bastion ~]# wget https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.2/latest/rhcos-4.2.0-x86_64-metal-bios.raw.gz
+[root@bastion ~]# wget https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.5/4.5.6/rhcos-metal.x86_64.raw.gz
 ```
 
 ```
@@ -420,7 +428,9 @@ backend router_https
     server node01 node01.ocp4.hX.rhaw.io:443 check
     server node02 node02.ocp4.hX.rhaw.io:443 check
     server node03 node03.ocp4.hX.rhaw.io:443 check
-    server node04 node04.ocp4.hX.rhaw.io:443 check
+    server node04 node04.ocp5.hX.rhaw.io:443 check
+    server node05 node05.ocp6.hX.rhaw.io:443 check
+    server node06 node06.ocp7.hX.rhaw.io:443 check
 
 frontend router_http
     mode http
@@ -435,6 +445,9 @@ backend router_http
     server node02 node02.ocp4.hX.rhaw.io:80 check
     server node03 node03.ocp4.hX.rhaw.io:80 check
     server node04 node04.ocp4.hX.rhaw.io:80 check
+    server node04 node04.ocp4.hX.rhaw.io:443 check
+    server node05 node05.ocp4.hX.rhaw.io:443 check
+    server node06 node06.ocp4.hX.rhaw.io:443 check
 ```
 
 > Important: Please adjust this file according to your environment if needed.
@@ -458,13 +471,13 @@ Now we need to configure SElinux to use custom ports in SELinux:
 For our disconnected Installation we need to install an own local Registry on our bastion Machine. For that we first need to install the openshift client tools:
 
 ```
-[root@bastion ~]# wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.2.14/openshift-client-linux-4.2.14.tar.gz
+[root@bastion ~]# wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.5.6/openshift-client-linux-4.5.6.tar.gz
 ```
 
 After downloading the client tools we need to extract them:
 
 ```
-[root@bastion ~]# tar -xvf openshift-client-linux-4.2.14.tar.gz
+[root@bastion ~]# tar -xvf openshift-client-linux-4.5.6.tar.gz
 ```
 
 Then we need to copy the files to the proper location on our bastion machine:
@@ -565,24 +578,6 @@ We need to login with ssh and the username and password provided through the ins
 ssh root@bastion.hX.rhaw.io
 ```
 
-First of all we need to download and install the Openshift client and the installer.
-
-> Important: Please be sure that you downloaded the correct versions. If you have a version mismatch ???
-
-```
-[root@bastion ~]# cd /root
-```
-
-```
-[root@bastion ~]# wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.2.14/openshift-install-linux-4.2.14.tar.gz
-```
-
-```
-[root@bastion ~]# tar -xvf openshift-install-linux-4.2.14.tar.gz
-```
-
-```
-[root@bastion ~]# cp -v oc kubectl openshift-install /usr/local/bin/
 ```
 
 Now we need to create a SSH key pair to access to use later to access the CoreOS nodes
@@ -591,26 +586,14 @@ Now we need to create a SSH key pair to access to use later to access the CoreOS
 [root@bastion ~]# ssh-keygen -t rsa -N "" -f /root/.ssh/id_rsa
 ```
 
-```
-[root@bastion ~]# cd /root
-```
+## Set up the ignition files
+
+We have to create the ignition files they will be used for the installation:
+
+First we start with the install-config-base.yaml file
 
 ```
-[root@bastion ~]# mkdir -p ocp4
-```
-
-```
-[root@bastion ~]# cd ocp4
-```
-
-For the disconnected Installation we need the Pull Secret downloaded from https://cloud.redhat.com.
-
-The file is named: pull-secret.text
-
-The Pull Secret for the local Registry needs to be created like this:
-
-```
-[root@bastion ~]# echo -n 'student:redhat' | base64 -w0 
+[root@bastion ~]# vim install-config-base.yaml
 ```
 
 The output is something like this:
@@ -673,7 +656,7 @@ After we have done this we need to mirror the needed images to our registry.
 We need to set some variables so that we can mirror the correct content:
 
 ```
-[root@bastion ~]# export OCP_RELEASE=4.2.14
+[root@bastion ~]# export OCP_RELEASE=4.5.6
 ```
 
 ```
@@ -725,31 +708,35 @@ Next we need to create the ignition files that will be used during the installat
 
 Now we need to create the install-config-base.yaml file:
 
-> Please adjust this file to your needs with the values provided earlier.
+irst we start with the install-config-base.yaml file
+
+```
+[root@bastion ~]# vim install-config-base.yaml
+```
 
 ```
 apiVersion: v1
 baseDomain: hX.rhaw.io
 compute:
 - hyperthreading: Enabled
- name: node
- replicas: 0
+  name: node
+  replicas: 0
 controlPlane:
- hyperthreading: Enabled
- name: master
- replicas: 3
+  hyperthreading: Enabled
+  name: master
+  replicas: 3
 metadata:
- name: ocp4
+  name: ocp4
 networking:
- clusterNetworks:
- - cidr: 10.128.0.0/14
- hostPrefix: 23
- networkType: OpenShiftSDN
- serviceNetwork:
- - 172.30.0.0/16
+  clusterNetworks:
+  - cidr: 10.128.0.0/14
+    hostPrefix: 23
+  networkType: OpenShiftSDN
+  serviceNetwork:
+  - 172.30.0.0/16
 platform:
- none: {}
-pullSecret: 'SELF CREATED'
+  none: {}
+pullSecret: 'GET FROM cloud.redhat.com'
 sshKey: 'SSH PUBLIC KEY'
 imageContentSources:
  - mirrors:
@@ -758,14 +745,127 @@ imageContentSources:
 - mirrors:
 ```
 
+Please adjust this file to your needs.
+
+> The pull secret can be obtained after accessing: https://cloud.redhat.com
+> 
+> Please login with your RHNID and your password.
+> 
+> The pull secret can be found when access the following link:
+> 
+> https://cloud.redhat.com/openshift/install/metal/user-provisioned
+
+To obtain this key please execute:
+
+```
+[root@bastion ~]# cat /root/.ssh/id_rsa.pub
+```
+
+Copy the content of the output into the sshKey parameter: Don't miss the quotes at the beginning and the end of the cpoied string!
+
+Create the direcory ocp4
+
+```
+[root@bastion ~]# mkdir -p ocp4
+```
+
+And change into it
+
+```
+[root@bastion ocp4]# cd ocp4
+```
+
+Copy the install-config-base.yaml file into the ocp4 directory and rename it to install-config.yaml
+
+```
+[root@bastion ocp4]# cp ../install-config-base.yaml install-config.yaml
+```
+
+Don't forget to copy this file this is very important!!! If this file is missing, the creation of the ignition files will fail!
+
+> Everytime you recreate the ignition files you need to ensure that the ocp4 directory is empty except the install-config-base.yaml file and the manifest files have to be recreated and modifyied. Very Important the .openshift_install_state.json file needs to be deleted before you recreate the ignition file. This file contains the installation certificates and can damage your installation when you use old certificates in new ignition files.
+
+Because we want to prevent pods from being scheduled on the control plane machines (masters), we have to modifiy the `manifests/cluster-scheduler-02-config.yml` Kubernetes manifest file.
+
+To create the Kubernetes manifest files run:
+
+```
+[root@bastion ocp4]# openshift-install create manifests
+INFO Consuming Install Config from target directory 
+WARNING Making control-plane schedulable by setting MastersSchedulable to true for Scheduler cluster settings
+```
+
+Directory content looks now like this (the install-config.yaml is gone!):
+
+```
+[root@bastion ocp4]# tree /root/ocp4
+/root/ocp4
+├── manifests
+│   ├── 04-openshift-machine-config-operator.yaml
+│   ├── cluster-config.yaml
+│   ├── cluster-dns-02-config.yml
+│   ├── cluster-infrastructure-02-config.yml
+│   ├── cluster-ingress-02-config.yml
+│   ├── cluster-network-01-crd.yml
+│   ├── cluster-network-02-config.yml
+│   ├── cluster-proxy-01-config.yaml
+│   ├── cluster-scheduler-02-config.yml
+│   ├── cvo-overrides.yaml
+│   ├── etcd-ca-bundle-configmap.yaml
+│   ├── etcd-client-secret.yaml
+│   ├── etcd-host-service-endpoints.yaml
+│   ├── etcd-host-service.yaml
+│   ├── etcd-metric-client-secret.yaml
+│   ├── etcd-metric-serving-ca-configmap.yaml
+│   ├── etcd-metric-signer-secret.yaml
+│   ├── etcd-namespace.yaml
+│   ├── etcd-service.yaml
+│   ├── etcd-serving-ca-configmap.yaml
+│   ├── etcd-signer-secret.yaml
+│   ├── kube-cloud-config.yaml
+│   ├── kube-system-configmap-root-ca.yaml
+│   ├── machine-config-server-tls-secret.yaml
+│   └── openshift-config-secret-pull-secret.yaml
+└── openshift
+    ├── 99_kubeadmin-password-secret.yaml
+    ├── 99_openshift-cluster-api_master-user-data-secret.yaml
+    ├── 99_openshift-cluster-api_node-user-data-secret.yaml
+    ├── 99_openshift-machineconfig_99-master-ssh.yaml
+    └── 99_openshift-machineconfig_99-node-ssh.yaml
+
+2 directories, 30 files
+```
+
+We have to set the value of the parameter `mastersSchedulable` from true to false
+
+```
+[root@bastion ocp4]# sed -i 's/true/false/' manifests/cluster-scheduler-02-config.yml
+```
+
 Now we will create the ignition files:
 
 ```
-[root@bastion ~]# cd /root/ocp4/
+[root@bastion ocp4]# openshift-install create ignition-configs
+INFO Consuming Install Config from target directory 
+INFO Consuming node Machines from target directory 
+INFO Consuming Master Machines from target directory 
+INFO Consuming Openshift Manifests from target directory 
+INFO Consuming Common Manifests from target directory 
 ```
 
+The content of the directory ocp4 has now this content (the directoies openshift and manifests are gone!)
+
 ```
-[root@bastion ~]# cp install-config-base.yaml install-config.yaml
+[root@bastion ocp4]# tree /root/ocp4
+/root/ocp4
+├── auth
+│   ├── kubeadmin-password
+│   └── kubeconfig
+├── bootstrap.ign
+├── master.ign
+├── metadata.json
+└── node.ign
+```
 ```
 
 Don't forget to copy this file this is very important!!! If this file is missing, then the creation of the ignition files will fail!!!
@@ -806,7 +906,7 @@ Now we need to copy the files to our httpd server:
 Now we are done with the installation and can start the initial cluster installation.
 
 ```
-[root@bastion ~]# systemctl enable --now haproxy.service dhcpd httpd tftp named
+[root@bastion ocp4]# systemctl enable --now haproxy.service dhcpd httpd tftp named
 ```
 
 > Important: ensure every time that haproxy is up and running. Sometimes during reboot of your service machine it is not coming up.
@@ -814,19 +914,19 @@ Now we are done with the installation and can start the initial cluster installa
 To ensure type:
 
 ```
-[root@bastion ~]# systemctl status haproxy
+[root@bastion ocp4]# systemctl status haproxy
 ```
 
 If the state is failed then type:
 
 ```
-[root@bastion ~]# systemctl restart haproxy
+[root@bastion ocp4]# systemctl restart haproxy
 ```
 
-re-check again:
+Re-check again:
 
 ```
-[root@bastion ~]# systemctl status haproxy
+[root@bastion ocp4]# systemctl status haproxy
 ```
 
 Now we are able to install our virtual machines for installing openshift cluster. The Procedure of the installation is similar to the connected installation.
