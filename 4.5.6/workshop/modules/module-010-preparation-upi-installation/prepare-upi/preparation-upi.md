@@ -32,6 +32,8 @@ Comment out the two lines below in /etc/named.conf:
 [root@bastion ~]# vim /etc/named.conf
 ```
 
+
+
 ```
 #listen-on port 53 { 127.0.0.1; };
 #listen-on-v6 port 53 { ::1; };
@@ -78,7 +80,6 @@ $TTL     1D
                   IN  NS  dns.ocp4.hX.rhaw.io.
 dns.ocp4            IN  A   192.168.100.254
 bastion            IN CNAME dns.ocp4
-workstation            IN  A   192.168.100.253
 bootstrap.ocp4            IN  A   192.168.100.10
 master01.ocp4            IN  A   192.168.100.21
 master02.ocp4            IN  A   192.168.100.22
@@ -93,6 +94,9 @@ node01.ocp4            IN  A   192.168.100.31
 node02.ocp4            IN  A   192.168.100.32
 node03.ocp4            IN  A   192.168.100.33
 node04.ocp4            IN  A   192.168.100.34
+node05.ocp4            IN  A   192.168.100.35
+node06.ocp4            IN  A   192.168.100.36
+node07.ocp4            IN  A   192.168.100.37
 _etcd-server-ssl._tcp.ocp4    IN  SRV 0 10    2380 etcd-0.ocp4
 _etcd-server-ssl._tcp.ocp4      IN      SRV     0 10    2380 etcd-1.ocp4
 _etcd-server-ssl._tcp.ocp4      IN      SRV     0 10    2380 etcd-2.ocp4
@@ -183,7 +187,10 @@ ddns-update-style interim;
          host node02 { hardware ethernet 52:54:00:c4:8f:50; fixed-address 192.168.100.32; option host-name "node02.ocp4.hX.rhaw.io"; }
          host node03 { hardware ethernet 52:54:00:fe:e5:e3; fixed-address 192.168.100.33; option host-name "node03.ocp4.hX.rhaw.io"; }
          host node04 { hardware ethernet 52:54:00:f1:79:58; fixed-address 192.168.100.34; option host-name "node04.ocp4.hX.rhaw.io"; }
-         host workstation { hardware ethernet 52:54:00:af:bb:59; fixed-address 192.168.100.253; option host-name "workstation.ocp4.hX.rhaw.io"; }
+         host node05 { hardware ethernet 52:54:00:f1:79:59; fixed-address 192.168.100.35; option host-name "node05.ocp4.hX.rhaw.io"; }
+         host node06 { hardware ethernet 52:54:00:f1:79:60; fixed-address 192.168.100.36; option host-name "node06.ocp4.hX.rhaw.io"; }
+         host node07 { hardware ethernet 52:54:00:f1:79:61; fixed-address 192.168.100.37; option host-name "node07.ocp4.hX.rhaw.io"; }
+         
 
 }
 ```
@@ -213,16 +220,16 @@ timeout 30
 menu title **** OpenShift 4.5 PXE Boot Menu ****
 
 label bootstrap
- kernel /openshift4/4.5.6/rhcos-4.5.6-x86_64-installer-kernel
- append ip=dhcp rd.neednet=1 coreos.inst.install_dev=sda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.5.6/images/rhcos-4.5.6-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.5.6/ignitions/bootstrap.ign initrd=/openshift4/4.5.6/rhcos-4.5.6-x86_64-installer-initramfs.img
+ kernel /openshift4/4.5.6/rhcos-4.5.6-x86_64-installer-kernel-x86_64
+ append ip=dhcp rd.neednet=1 coreos.inst.install_dev=sda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.5.6/images/rhcos-metal.x86_64.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.5.6/ignitions/bootstrap.ign initrd=/openshift4/4.5.6/rhcos-4.5.6-x86_64-installer-initramfs.img
 
 label master
- kernel /openshift4/4.5.6/rhcos-4.5.6-x86_64-installer-kernel
- append ip=dhcp rd.neednet=1 coreos.inst.install_dev=sda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.5.6/images/rhcos-4.5.6-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.5.6/ignitions/master.ign initrd=/openshift4/4.5.6/rhcos-4.5.6-x86_64-installer-initramfs.img
+ kernel /openshift4/4.5.6/rhcos-4.5.6-x86_64-installer-kernel-x86_64
+ append ip=dhcp rd.neednet=1 coreos.inst.install_dev=sda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.5.6/images/rhcos-metal.x86_64.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.5.6/ignitions/master.ign initrd=/openshift4/4.5.6/rhcos-4.5.6-x86_64-installer-initramfs.img
 
 label node
- kernel /openshift4/4.5.6/rhcos-4.5.6-x86_64-installer-kernel
- append ip=dhcp rd.neednet=1 coreos.inst.install_dev=sda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.5.6/images/rhcos-4.5.6-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.5.6/ignitions/node.ign initrd=/openshift4/4.5.6/rhcos-4.5.6-x86_64-installer-initramfs.img
+ kernel /openshift4/4.5.6/rhcos-4.5.6-x86_64-installer-kernel-x86_64
+ append ip=dhcp rd.neednet=1 coreos.inst.install_dev=sda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.5.6/images/rhcos-metal.x86_64.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.5.6/ignitions/node.ign initrd=/openshift4/4.5.6/rhcos-4.5.6-x86_64-installer-initramfs.img
 ```
 
 > Important: Please adjust the IP address to the ip address of your environment
@@ -250,8 +257,8 @@ default bootstrap
 prompt 0
 timeout 30
 label bootstrap
- kernel /openshift4/4.5.6/rhcos-4.5.6-x86_64-installer-kernel
- append ip=dhcp rd.neednet=1 coreos.inst.install_dev=sda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.5.6/images/rhcos-4.5.6-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.5.6/ignitions/bootstrap.ign initrd=/openshift4/4.5.6/rhcos-4.5.6-x86_64-installer-initramfs.img
+ kernel /openshift4/4.5.6/rhcos-4.5.6-x86_64-installer-kernel-x86_64
+ append ip=dhcp rd.neednet=1 coreos.inst.install_dev=sda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.5.6/images/rhcos-metal.x86_64.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.5.6/ignitions/bootstrap.ign initrd=/openshift4/4.5.6/rhcos-4.5.6-x86_64-installer-initramfs.img
 ```
 
 The file for each master  node needs to be:
@@ -261,8 +268,8 @@ default master
 prompt 0
 timeout 30
 label master
- kernel /openshift4/4.5.6/rhcos-4.5.6-x86_64-installer-kernel
- append ip=dhcp rd.neednet=1 coreos.inst.install_dev=sda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.5.6/images/rhcos-4.5.6-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.5.6/ignitions/master.ign initrd=/openshift4/4.5.6/rhcos-4.5.6-x86_64-installer-initramfs.img
+ kernel /openshift4/4.5.6/rhcos-4.5.6-x86_64-installer-kernel-x86_64
+ append ip=dhcp rd.neednet=1 coreos.inst.install_dev=sda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.5.6/images/rhcos-metal.x86_64.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.5.6/ignitions/master.ign initrd=/openshift4/4.5.6/rhcos-4.5.6-x86_64-installer-initramfs.img
 ```
 
 The file for each node node needs to be:
@@ -272,8 +279,8 @@ default node
 prompt 0
 timeout 30
 label node
- kernel /openshift4/4.5.6/rhcos-4.5.6-x86_64-installer-kernel
- append ip=dhcp rd.neednet=1 coreos.inst.install_dev=sda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.5.6/images/rhcos-4.5.6-x86_64-metal-bios.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.5.6/ignitions/node.ign initrd=/openshift4/4.5.6/rhcos-4.5.6-x86_64-installer-initramfs.img
+ kernel /openshift4/4.5.6/rhcos-4.5.6-x86_64-installer-kernel-x86_64
+ append ip=dhcp rd.neednet=1 coreos.inst.install_dev=sda console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.image_url=http://192.168.100.254:8080/openshift4/4.5.6/images/rhcos-metal.x86_64.raw.gz coreos.inst.ignition_url=http://192.168.100.254:8080/openshift4/4.5.6/ignitions/node.ign initrd=/openshift4/4.5.6/rhcos-4.5.6-x86_64-installer-initramfs.img
 ```
 
 > Each of the files we now create needs to have a 01- in front and then the MAC Address of each node seperated with a dash!!!
@@ -331,13 +338,13 @@ access this directory:
 and download the kernel file to this directory:
 
 ```
-[root@bastion ~]# wget https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.5/4.5.6/rhcos-4.5.6-x86_64-installer-kernel
+[root@bastion ~]# wget https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.5/4.5.6/rhcos-4.5.6-x86_64-installer-kernel-x86_64
 ```
 
 Then the CoreOS Installer initramfs image:
 
 ```
-[root@bastion ~]# wget https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.5/4.5.6/rhcos-4.5.6-x86_64-installer-initramfs.img
+[root@bastion ~]# wget https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.5/4.5.6/rhcos-4.5.6-x86_64-installer-initramfs.x86_64.img
 ```
 
 Now we ned to relabel the files for selinux:
@@ -357,7 +364,7 @@ Next we need to host the Red Hat Core OS metal BIOS image:
 ```
 
 ```
-[root@bastion ~]# wget https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.5/4.5.6/rhcos-4.5.6-x86_64-metal.raw.gz
+[root@bastion ~]# wget https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.5/4.5.6/rhcos-metal.x86_64.raw.gz
 ```
 
 ```
@@ -421,7 +428,9 @@ backend router_https
     server node01 node01.ocp4.hX.rhaw.io:443 check
     server node02 node02.ocp4.hX.rhaw.io:443 check
     server node03 node03.ocp4.hX.rhaw.io:443 check
-    server node04 node04.ocp4.hX.rhaw.io:443 check
+    server node04 node04.ocp5.hX.rhaw.io:443 check
+    server node05 node05.ocp6.hX.rhaw.io:443 check
+    server node06 node06.ocp7.hX.rhaw.io:443 check
 
 frontend router_http
     mode http
@@ -436,6 +445,9 @@ backend router_http
     server node02 node02.ocp4.hX.rhaw.io:80 check
     server node03 node03.ocp4.hX.rhaw.io:80 check
     server node04 node04.ocp4.hX.rhaw.io:80 check
+    server node04 node04.ocp4.hX.rhaw.io:443 check
+    server node05 node05.ocp4.hX.rhaw.io:443 check
+    server node06 node06.ocp4.hX.rhaw.io:443 check
 ```
 
 > Important: Please adjust this file according to your environment if needed.
@@ -559,6 +571,7 @@ Create the direcory ocp4
 ```
 [root@bastion ~]# mkdir -p ocp4
 ```
+
 And change into it
 
 ```
@@ -574,7 +587,6 @@ Copy the install-config-base.yaml file into the ocp4 directory and rename it to 
 Don't forget to copy this file this is very important!!! If this file is missing, the creation of the ignition files will fail!
 
 > Everytime you recreate the ignition files you need to ensure that the ocp4 directory is empty except the install-config-base.yaml file and the manifest files have to be recreated and modifyied. Very Important the .openshift_install_state.json file needs to be deleted before you recreate the ignition file. This file contains the installation certificates and can damage your installation when you use old certificates in new ignition files.
-
 
 Because we want to prevent pods from being scheduled on the control plane machines (masters), we have to modifiy the `manifests/cluster-scheduler-02-config.yml` Kubernetes manifest file.
 
@@ -656,7 +668,6 @@ The content of the directory ocp4 has now this content (the directoies openshift
 ├── master.ign
 ├── metadata.json
 └── node.ign
-
 ```
 
 We have to copy the files to our httpd server:
@@ -668,6 +679,7 @@ We have to copy the files to our httpd server:
 ```
 [root@bastion ocp4]# cp -v *.ign /var/www/html/openshift4/4.5.6/ignitions/
 ```
+
 ```
 [root@bastion ocp4]# chmod 644 /var/www/html/openshift4/4.5.6/ignitions/*.ign
 ```
