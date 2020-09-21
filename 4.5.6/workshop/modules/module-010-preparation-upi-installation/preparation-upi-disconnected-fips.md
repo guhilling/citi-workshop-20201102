@@ -476,6 +476,106 @@ Now we need to configure SElinux to use custom ports in SELinux:
 [root@bastion ~]# semanage port -a 32700 -t http_port_t -p tcp
 ```
 
+## Install Local Registry
+
+For our disconnected Installation we need to install an own local Registry on our bastion Machine. For that we first need to install the openshift client tools:
+
+```
+[root@bastion ~]# wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.5.6/openshift-client-linux-4.5.6.tar.gz
+```
+
+After downloading the client tools we need to extract them:
+
+```
+[root@bastion ~]# tar -xvf openshift-client-linux-4.5.6.tar.gz
+```
+
+Then we need to copy the files to the proper location on our bastion machine:
+
+```
+[root@bastion ~]# cp -v oc kubectl /usr/local/bin/
+```
+
+If not already done we need to install several packages:
+
+```
+[root@bastion ~]# yum -y install podman httpd-tools
+```
+
+Now we need to create the needed folders for our registry
+
+```
+[root@bastion ~]# mkdir -p /opt/registry/{auth,certs,data}
+```
+
+Now we need to Provide a certificate for the registry. If we do not have an existing, trusted certificate authority, we can generate a self-signed certificate:
+
+```
+[root@bastion ~]# cd /opt/registry/certs
+```
+
+```
+[root@bastion ~]# openssl req -newkey rsa:4096 -nodes -sha256 -keyout domain.key -x509 -days 365 -out domain.crt
+```
+
+The procedure will ask several questions that need to be answered:
+
+| Country Name (2 letter code)                          | Specify the two-letter ISO country code for your location. See the [ISO 3166 country codes](https://www.iso.org/iso-3166-country-codes.html) standard.       |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| State or Province Name (full name)                    | Enter the full name of your state or province.                                                                                                               |
+| Locality Name (eg, city)                              | Enter the name of your city.                                                                                                                                 |
+| Organization Name (eg, company)                       | Enter your company name.                                                                                                                                     |
+| Organizational Unit Name (eg, section)                | Enter your department name.                                                                                                                                  |
+| Common Name (eg, your name or your server’s hostname) | Enter the host name for the registry host. Ensure that your hostname is in DNS and that it resolves to the expected IP address.                              |
+| Email Address                                         | Enter your email address. For more information, see the [req](https://www.openssl.org/docs/man1.1.1/man1/req.html) description in the OpenSSL documentation. |
+
+After creating the registry we need to create a username and password for our registry
+
+```
+[root@bastion ~]# htpasswd -bBc /opt/registry/auth/htpasswd <user_name> <password>
+```
+
+Username and Password should be: student and redhat
+
+The next step is to run our local registry with the following command:
+
+```
+[root@bastion ~]# podman run --name mirror-registry -p 5000:5000 \ 
+     -v /opt/registry/data:/var/lib/registry:z \
+     -v /opt/registry/auth:/auth:z \
+     -e "REGISTRY_AUTH=htpasswd" \
+     -e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm" \
+     -e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd \
+     -v /opt/registry/certs:/certs:z \
+     -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.crt \
+     -e REGISTRY_HTTP_TLS_KEY=/certs/domain.key \
+     -d docker.io/library/registry:2
+```
+
+After done this we need to open several ports on our registry node:
+
+```
+[root@bastion ~]# firewall-cmd --add-port=5000/tcp --zone=internal --permanent 
+```
+
+```
+[root@bastion ~]# # firewall-cmd --add-port=5000/tcp --zone=public   --permanent
+```
+
+```
+[root@bastion ~]# firewall-cmd --reload
+```
+
+Now we need to add the self created certificate to the the local trust:
+
+```
+[root@bastion ~]# cp /opt/registry/certs/domain.crt /etc/pki/ca-trust/source/anchors/
+```
+
+```
+[root@bastion ~]# update-ca-trust
+```
+
 Now we have created all of our bastion. the next step is to prepare the installation from the Openshift perspective
 
 ## Configure OpenShift installer and CLI binary:
@@ -557,6 +657,11 @@ platform:
 fips: true
 pullSecret: 'GET FROM cloud.redhat.com'
 sshKey: 'SSH PUBLIC KEY'
+imageContentSources:
+ - mirrors:
+ - bastion.hX.rhaw.io:5000/<repo_name>/release
+ source: quay.io/openshift-release-dev/ocp-release
+- mirrors:
 ```
 
 Please adjust this file to your needs.
