@@ -1,6 +1,6 @@
 # Module01:
 
-# Preparation of the installation Environment
+# Preparation of the installation Environment for Disconnected Installation with Disc Encryption
 
 ### Preface:
 
@@ -31,8 +31,6 @@ Comment out the two lines below in /etc/named.conf:
 ```
 [root@bastion ~]# vim /etc/named.conf
 ```
-
-
 
 ```
 #listen-on port 53 { 127.0.0.1; };
@@ -465,6 +463,262 @@ Now we need to configure SElinux to use custom ports in SELinux:
 ```
 [root@bastion ~]# semanage port -a 32700 -t http_port_t -p tcp
 ```
+## Enabling Tang Encryption
+
+First of all we need to prepare our Bastion Node for serving Tang Service for  Network-bound disk encryption. 
+
+Two Tools are important for this:
+
+### Tang:
+
+*Tang* is a server for binding data to network presence. It makes a system containing your data available when the system is bound to a certain secure network. Tang is stateless and does not require TLS or authentication. Unlike escrow-based solutions, where the server stores all encryption keys and has knowledge of every key ever used, Tang never interacts with any client keys, so it never gains any identifying information from the client.
+
+### Clevis:
+
+*Clevis* is a pluggable framework for automated decryption. In NBDE, Clevis provides automated unlocking of LUKS volumes. The **clevis** package provides the client side of the feature.
+
+A *Clevis pin* is a plug-in into the Clevis framework. One of such pins is a plug-in that implements interactions with the NBDE server — Tang.
+
+Clevis and Tang are generic client and server components that provide network-bound encryption. In Red Hat Enterprise Linux, they are used in conjunction with LUKS to encrypt and decrypt root and non-root storage volumes to accomplish Network-Bound Disk Encryption.
+
+Both client- and server-side components use the *José* library to perform encryption and decryption operations.
+
+First install both tools on your bastion node:
+
+```
+[root@bastion ~]# yum install -y tang clevis
+```
+
+```
+[root@bastion ~]# semanage port -a -t tangd_port_t -p tcp 7500
+```
+
+```
+[root@bastion ~]# firewall-cmd --add-port=7500/tcp
+```
+
+```
+[root@bastion ~]# firewall-cmd --runtime-to-permanent
+```
+
+```
+[root@bastion ~]# systemctl enable tangd.socket
+```
+
+```
+[root@bastion ~]# systemctl edit tangd.socket
+```
+
+```
+[Socket]
+ListenStream=
+ListenStream=7500
+```
+
+```
+[root@bastion ~]# systemctl daemon-reload
+```
+
+```
+[root@bastion ~]# systemctl show tangd.socket -p Listen
+```
+
+```
+Listen=[::]:7500 (Stream)
+```
+
+```
+[root@bastion ~]# systemctl start tangd.socket
+```
+
+```
+[root@bastion ~]# tang-show-keys 7500
+```
+
+In the Next Step we will create Keys for our encrypted disc installation
+
+```
+echo nifty random wordwords \
+     | clevis-encrypt-tang \
+       '{"url":"https://tang.hX.rhaw.io:7500"}'
+```
+
+The advertisement contains the following signing keys:
+
+```
+PLjNyRdGw03zlRoGjQYMahSZGu9
+```
+
+Create a Base64 encoded file, replacing the URL of the Tang server (`url`) and thumbprint (`thp`) you just generated:
+
+```
+(cat <<EOM
+{
+ "url": "https://tang.example.com",
+ "thp": "PLjNyRdGw03zlRoGjQYMahSZGu9"
+}
+EOM
+) | base64 -w0
+```
+
+Example output:
+
+```
+ewogInVybCI6ICJodHRwczovL3RhbmcuZXhhbXBsZS5jb20iLAogInRocCI6ICJaUk1leTFjR3cwN3psVExHYlhuUWFoUzBHdTAiCn0K
+```
+
+This base64 we need to save now into two specific manifests that we use later:
+
+Master:
+
+```
+cat << EOF > ./99-openshift-master-encryption.yaml
+apiVersion: machineconfiguration.openshift.io/v1
+kind: MachineConfig
+metadata:
+  name: master-tang
+  labels:
+    machineconfiguration.openshift.io/role: master
+spec:
+  config:
+    ignition:
+      version: 2.2.0
+    storage:
+      files:
+      - contents:
+          source: data:text/plain;base64,e30K
+          source: data:text/plain;base64,ewogInVybCI6ICJodHRwczovL3RhbmcuZXhhbXBsZS5jb20iLAogInRocCI6ICJaUk1leTFjR3cwN3psVExHYlhuUWFoUzBHdTAiCn0K
+        filesystem: root
+        mode: 420
+        path: /etc/clevis.json
+EOF
+```
+
+Worker Nodes:
+
+```
+cat << EOF > ./99-openshift-worker-tang-encryption.yaml
+apiVersion: machineconfiguration.openshift.io/v1
+kind: MachineConfig
+metadata:
+  name: worker-tang
+  labels:
+    machineconfiguration.openshift.io/role: worker
+spec:
+  config:
+    ignition:
+      version: 2.2.0
+    storage:
+      files:
+      - contents:
+          source: data:text/plain;base64,e30K
+          source: data:text/plain;base64,ewogInVybCI6ICJodHRwczovL3RhbmcuZXhhbXBsZS5jb20iLAogInRocCI6ICJaUk1leTFjR3cwN3psVExHYlhuUWFoUzBHdTAiCn0K
+        filesystem: root
+        mode: 420
+        path: /etc/clevis.json
+EOF
+```
+
+
+## Install Local Registry
+
+For our disconnected Installation we need to install an own local Registry on our bastion Machine. For that we first need to install the openshift client tools:
+
+```
+[root@bastion ~]# wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.5.6/openshift-client-linux-4.5.6.tar.gz
+```
+
+After downloading the client tools we need to extract them:
+
+```
+[root@bastion ~]# tar -xvf openshift-client-linux-4.5.6.tar.gz
+```
+
+Then we need to copy the files to the proper location on our bastion machine:
+
+```
+[root@bastion ~]# cp -v oc kubectl /usr/local/bin/
+```
+
+If not already done we need to install several packages:
+
+```
+[root@bastion ~]# yum -y install podman httpd-tools
+```
+
+Now we need to create the needed folders for our registry
+
+```
+[root@bastion ~]# mkdir -p /opt/registry/{auth,certs,data}
+```
+
+Now we need to Provide a certificate for the registry. If we do not have an existing, trusted certificate authority, we can generate a self-signed certificate:
+
+```
+[root@bastion ~]# cd /opt/registry/certs
+```
+
+```
+[root@bastion ~]# openssl req -newkey rsa:4096 -nodes -sha256 -keyout domain.key -x509 -days 365 -out domain.crt
+```
+
+The procedure will ask several questions that need to be answered:
+
+| Country Name (2 letter code)                          | Specify the two-letter ISO country code for your location. See the [ISO 3166 country codes](https://www.iso.org/iso-3166-country-codes.html) standard.       |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| State or Province Name (full name)                    | Enter the full name of your state or province.                                                                                                               |
+| Locality Name (eg, city)                              | Enter the name of your city.                                                                                                                                 |
+| Organization Name (eg, company)                       | Enter your company name.                                                                                                                                     |
+| Organizational Unit Name (eg, section)                | Enter your department name.                                                                                                                                  |
+| Common Name (eg, your name or your server’s hostname) | Enter the host name for the registry host. Ensure that your hostname is in DNS and that it resolves to the expected IP address.                              |
+| Email Address                                         | Enter your email address. For more information, see the [req](https://www.openssl.org/docs/man1.1.1/man1/req.html) description in the OpenSSL documentation. |
+
+After creating the registry we need to create a username and password for our registry
+
+```
+[root@bastion ~]# htpasswd -bBc /opt/registry/auth/htpasswd <user_name> <password>
+```
+
+Username and Password should be: student and redhat
+
+The next step is to run our local registry with the following command:
+
+```
+[root@bastion ~]# podman run --name mirror-registry -p 5000:5000 \ 
+     -v /opt/registry/data:/var/lib/registry:z \
+     -v /opt/registry/auth:/auth:z \
+     -e "REGISTRY_AUTH=htpasswd" \
+     -e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm" \
+     -e REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd \
+     -v /opt/registry/certs:/certs:z \
+     -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/domain.crt \
+     -e REGISTRY_HTTP_TLS_KEY=/certs/domain.key \
+     -d docker.io/library/registry:2
+```
+
+After done this we need to open several ports on our registry node:
+
+```
+[root@bastion ~]# firewall-cmd --add-port=5000/tcp --zone=internal --permanent 
+```
+
+```
+[root@bastion ~]# # firewall-cmd --add-port=5000/tcp --zone=public   --permanent
+```
+
+```
+[root@bastion ~]# firewall-cmd --reload
+```
+
+Now we need to add the self created certificate to the the local trust:
+
+```
+[root@bastion ~]# cp /opt/registry/certs/domain.crt /etc/pki/ca-trust/source/anchors/
+```
+
+```
+[root@bastion ~]# update-ca-trust
+```
 
 Now we have created all of our bastion. the next step is to prepare the installation from the Openshift perspective
 
@@ -478,32 +732,6 @@ We need to login with ssh and the username and password provided through the ins
 ssh root@bastion.hX.rhaw.io
 ```
 
-First of all we need to download and install the Openshift client and the installer.
-
-> Important: Please be sure that you downloaded the correct versions. If you have a version mismatch ???
-
-```
-[root@bastion ~]# cd /root
-```
-
-```
-[root@bastion ~]# wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.5.6/openshift-install-linux-4.5.6.tar.gz
-```
-
-```
-[root@bastion ~]# wget https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.5.6/openshift-client-linux-4.5.6.tar.gz
-```
-
-```
-[root@bastion ~]# tar -xvf openshift-install-linux-4.5.6.tar.gz
-```
-
-```
-[root@bastion ~]# tar -xvf openshift-client-linux-4.5.6.tar.gz
-```
-
-```
-[root@bastion ~]# cp -v oc kubectl openshift-install /usr/local/bin/
 ```
 
 Now we need to create a SSH key pair to access to use later to access the CoreOS nodes
@@ -517,6 +745,124 @@ Now we need to create a SSH key pair to access to use later to access the CoreOS
 We have to create the ignition files they will be used for the installation:
 
 First we start with the install-config-base.yaml file
+
+```
+[root@bastion ~]# vim install-config-base.yaml
+```
+
+The output is something like this:
+
+```
+BGVtbYk3ZHAtqXs=
+```
+
+Now we need to make a copy in json format of the original pull secret file downloaded from cloud.redhat.com:
+
+```
+[root@bastion ~]# cat ./pull-secret.text | jq .  > /root/ocp4/pull-secret-local.text
+```
+
+The file looks similar to the example below:
+
+```
+{
+  "auths": {
+    "cloud.openshift.com": {
+      "auth": "b3BlbnNo...",
+      "email": "you@hX.rhaw.io"
+    },
+    "quay.io": {
+      "auth": "b3BlbnNo...",
+      "email": "you@hX.rhaw.io"
+    },
+    "registry.connect.redhat.com": {
+      "auth": "NTE3Njg5Nj...",
+      "email": "you@hX.rhaw.io"
+    },
+    "registry.redhat.io": {
+      "auth": "NTE3Njg5Nj...",
+      "email": "you@hX.rhaw.io"
+    }
+  }
+}
+```
+
+Now we need to edit the new file like this:
+
+```
+[root@bastion ~]# vim /root/ocp4/pull-secret-local.text
+```
+
+We just need to add a section to this file that describes the local registry:
+
+```
+"auths": {
+...
+ "<bastion.hX.rhaw.io:5000": {
+ "auth": "BGVtbYk3ZHAtqXs=",
+ "email": "root@hX.rhaw.io"
+ },
+...
+```
+
+After we have done this we need to mirror the needed images to our registry.
+
+We need to set some variables so that we can mirror the correct content:
+
+```
+[root@bastion ~]# export OCP_RELEASE=4.5.6
+```
+
+```
+[root@bastion ~]# export LOCAL_REGISTRY='bastion.hX.rhaw.io:5000'
+```
+
+```
+[root@bastion ~]# export LOCAL_REPOSITORY='ocp4/openshift4' 
+```
+
+```
+[root@bastion ~]# export PRODUCT_REPO='openshift-release-dev'
+```
+
+```
+[root@bastion ~]# export LOCAL_SECRET_JSON='/root/ocp4/pull-secret-local.text'
+```
+
+```
+[root@bastion ~]# export RELEASE_NAME="ocp-release"
+```
+
+After we have done this we can now mirror the images ... +/- 99 images.
+
+```
+[root@bastion ~]# oc adm -a ${LOCAL_SECRET_JSON} release mirror \
+     --from=quay.io/${PRODUCT_REPO}/${RELEASE_NAME}:${OCP_RELEASE} \
+     --to=${LOCAL_REGISTRY}/${LOCAL_REPOSITORY} \
+     --to-release image=${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}:${OCP_RELEASE}
+```
+
+After the mirroring has been done we can create an installation program that is based on the content that we have just mirrored:
+
+```
+[root@bastion ~]# oc adm -a ${LOCAL_SECRET_JSON} release extract --command=openshift-install "${LOCAL_REGISTRY}/${LOCAL_REPOSITORY}:${OCP_RELEASE}"
+```
+
+the last step is to optain the ssh public we earlier created:
+
+```
+[root@bastion ~]# cat /root/.ssh/id_rsa.pub
+```
+
+Next we need to create the ignition files that will be used during the installation:
+
+```
+[root@bastion ~]# vim /root/ocp4/install-config-base.yaml
+```
+
+Now we need to create the install-config-base.yaml file:
+
+irst we start with the install-config-base.yaml file
 
 ```
 [root@bastion ~]# vim install-config-base.yaml
@@ -546,6 +892,11 @@ platform:
   none: {}
 pullSecret: 'GET FROM cloud.redhat.com'
 sshKey: 'SSH PUBLIC KEY'
+imageContentSources:
+ - mirrors:
+ - bastion.hX.rhaw.io:5000/<repo_name>/release
+ source: quay.io/openshift-release-dev/ocp-release
+- mirrors:
 ```
 
 Please adjust this file to your needs.
@@ -645,6 +996,16 @@ We have to set the value of the parameter `mastersSchedulable` from true to fals
 [root@bastion ocp4]# sed -i 's/true/false/' manifests/cluster-scheduler-02-config.yml
 ```
 
+Now we copy the two manifests for disc encryption into this manifest folder:
+
+```
+cp 99-openshift-master-encryption.yaml /root/ocp4/manifests/
+```
+
+```
+cp 99-openshift-worker-tang-encryption.yaml /root/ocp4/manifests/
+```
+
 Now we will create the ignition files:
 
 ```
@@ -669,26 +1030,44 @@ The content of the directory ocp4 has now this content (the directoies openshift
 ├── metadata.json
 └── node.ign
 ```
-
-We have to copy the files to our httpd server:
-
-```
-[root@bastion ocp4]# mkdir -p /var/www/html/openshift4/4.5.6/ignitions
 ```
 
-```
-[root@bastion ocp4]# cp -v *.ign /var/www/html/openshift4/4.5.6/ignitions/
-```
+Don't forget to copy this file this is very important!!! If this file is missing, then the creation of the ignition files will fail!!!
+
+> Everytime you recreate the ignition files you need to ensure that the ocp4 directory is empty except the install-config-base.yaml file. Very Important the .openshift_install_state.json file needs to be deleted before you recreate the ignition file. This file contains the installation certificates and can damage your installation when you use old certificates in new ignition files.
 
 ```
-[root@bastion ocp4]# chmod 644 /var/www/html/openshift4/4.5.6/ignitions/*.ign
+[root@bastion ~]# openshift-install create ignition-configs
 ```
 
 ```
-[root@bastion ocp4]# restorecon -RFv /var/www/html/
+drwxr-xr-x. 3 root root     195 29. Nov 18:01 .
+dr-xr-x---. 9 root root    4096 29. Nov 18:00 ..
+drwxr-xr-x. 2 root root      50 29. Nov 18:01 auth
+-rw-r--r--. 1 root root  288789 29. Nov 18:01 bootstrap.ign
+-rw-r--r--. 1 root root    3716 24. Nov 23:58 install-config-base.yaml
+-rw-r--r--. 1 root root    1825 29. Nov 18:01 master.ign
+-rw-r--r--. 1 root root      96 29. Nov 18:01 metadata.json
+-rw-r--r--. 1 root root   58088 29. Nov 18:01 .openshift_install.log
+-rw-r--r--. 1 root root 1190917 29. Nov 18:01 .openshift_install_state.json
+-rw-r--r--. 1 root root    1825 29. Nov 18:01 node.ign
 ```
 
-We are done now with the installation preparation steps and can start the initial cluster installation.
+Now we need to copy the files to our httpd server:
+
+```
+[root@bastion ~]# mkdir -p /var/www/html/openshift4/4.2.0/ignitions
+```
+
+```
+[root@bastion ~]# cp -v *.ign /var/www/html/openshift4/4.2.0/ignitions/
+```
+
+```
+[root@bastion ~]# restorecon -RFv /var/www/html/
+```
+
+Now we are done with the installation and can start the initial cluster installation.
 
 ```
 [root@bastion ocp4]# systemctl enable --now haproxy.service dhcpd httpd tftp named
@@ -714,4 +1093,4 @@ Re-check again:
 [root@bastion ocp4]# systemctl status haproxy
 ```
 
-Now we are able to install an OpenShift 4 cluster onto our virtual machines.
+Now we are able to install our virtual machines for installing openshift cluster. The Procedure of the installation is similar to the connected installation.
