@@ -1,0 +1,148 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: hello
+  name: hello
+spec:
+  ports:
+    - port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: hello
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: world
+  name: world
+spec:
+  ports:
+    - port: 8081
+      protocol: TCP
+      targetPort: 8081
+  selector:
+    app: world
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: postgresql
+  name: postgresql
+spec:
+  ports:
+    - port: 5432
+      protocol: TCP
+      targetPort: 5432
+  selector:
+    app: postgresql
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgresql
+spec:
+  selector:
+    matchLabels:
+      app: postgresql
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: postgresql
+      annotations:
+        sidecar.istio.io/inject: "true"
+    spec:
+      containers:
+        - name: postgresql
+          env:
+          - name: POSTGRESQL_USER
+            value: gunnar
+          - name: POSTGRESQL_DATABASE
+            value: gunnar
+          - name: POSTGRESQL_PASSWORD
+            value: secret
+          image: docker.io/openshift/postgresql-92-centos7
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5432
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello
+spec:
+  selector:
+    matchLabels:
+      app: hello
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: hello
+      annotations:
+        sidecar.istio.io/inject: "true"
+    spec:
+      containers:
+        - name: hello
+          image: registry.hub.docker.com/guhilling/quarkus-hello:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - mountPath: /deployments/config
+              name: hello-config
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: hello
+        name: hello-config
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: world
+spec:
+  selector:
+    matchLabels:
+      app: world
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: world
+      annotations:
+        sidecar.istio.io/inject: "true"
+    spec:
+      containers:
+        - name: world
+          image: registry.hub.docker.com/guhilling/quarkus-world:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8081
+          volumeMounts:
+            - mountPath: /deployments/config
+              name: world-config
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: world
+        name: world-config
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  labels:
+    app: hello
+  name: hello
+spec:
+  port:
+    targetPort: 8080
+  to:
+    kind: Service
+    name: hello
+    weight: 100
