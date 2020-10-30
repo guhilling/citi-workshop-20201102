@@ -7,14 +7,18 @@ metadata:
     example: oauth
 spec:
   dex:
-    image: quay.io/redhat-cop/dex 
-    version: v2.22.0-openshift
     openShiftOAuth: true
   rbac:
     defaultPolicy: 'role:readonly'
     policy: |
       g, system:cluster-admins, role:admin
+      g, argoadmins, role:admin
+      g, argousers, role:readonly
     scopes: '[groups]'
   server:
+    insecure: true
     route:
       enabled: true
+      tls:
+        termination: edge
+
