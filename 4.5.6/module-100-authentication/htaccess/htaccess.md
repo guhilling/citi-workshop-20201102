@@ -21,6 +21,8 @@ First we need to create our htpasswd file on our bastion machine:
 [root@bastion ~]# htpasswd -c -B -b /root/users.htpasswd <user_name> <password>
 ```
 
+Create admin/redhat, developer/redhat and projectadmin/redhat
+
 If the htpasswd command isn't already installed, install it with the following command:
 
 ```sh
@@ -45,6 +47,12 @@ To use the HTPasswd identity provider, you must define a secret that contains th
 
 Now we need to create a Custom Resource (CR) with the parameters and acceptable values for an HTPasswd identity provider. 
 We have to create a YAML file with the following content
+
+The resource is located in the project "openshift-config". You can export it using:
+
+```sh
+[root@bastion ~]# oc get oauth cluster -n openshift-config -o yaml > /root/htpasswd_cr.yaml
+```
 
 ```sh
 [root@bastion ~]# vim /root/htpasswd_cr.yaml
