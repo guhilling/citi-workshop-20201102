@@ -104,7 +104,7 @@ Next, let's login to the web console and ensure that it's working as expected.
 
 Open a new shell on the bastion machine and
 In this step ***do not*** reuse your existing shell which has the `KUBECONFIG` variable set for using the 'system:admin' user.
-*** If KUBECONFIG is set, unset it, first! ***
+***If KUBECONFIG is set, unset it, first!***
 
 ```sh
 [root@bastion ~]# oc login -u <username> -p <password>  https://api.ocp4.hX.rhaw.io:6443
